@@ -176,7 +176,7 @@ const setupEventListeners = () => {
 document.addEventListener('DOMContentLoaded', async () => {
   initAuthNav()
   renderFilter()
-  initFilter(renderFilteredClasses, renderClasses)
+  await initFilter(renderFilteredClasses, renderClasses)
   await renderClasses()
   setupEventListeners()
 })

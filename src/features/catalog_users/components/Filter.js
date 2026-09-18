@@ -1,18 +1,18 @@
 import { schedulesService } from '../../../services/schedulesService.js'
 
-const getClasses = () => {
-  return schedulesService.getClasses()
-}
+let availableClasses = []
+
+const normalizeValue = (value) => String(value ?? '').trim().toLowerCase()
+const getClassTitle = (classItem) => classItem.catalog?.name ?? classItem.title ?? ''
+const getClassDate = (classItem) => classItem.scheduleDate ?? classItem.date ?? ''
 
 const getUniqueValues = (classes, property) => {
   if (!Array.isArray(classes)) return []
-  return [...new Set(classes.map(item => item[property]))]
+  return [...new Set(classes.map(property).map(normalizeValue).filter(Boolean))]
 }
 
-const renderFilterOptions = () => {
-  const classes = getClasses()
-
-  const titles = getUniqueValues(classes, 'title')
+const renderFilterOptions = (classes) => {
+  const titles = getUniqueValues(classes, getClassTitle)
   const titleSelect = document.querySelector('#filterTitle')
 
   titles.forEach(title => {
@@ -22,7 +22,7 @@ const renderFilterOptions = () => {
     titleSelect.appendChild(option)
   })
 
-  const levels = getUniqueValues(classes, 'level')
+  const levels = getUniqueValues(classes, classItem => classItem.level)
   const levelSelect = document.querySelector('#filterLevel')
 
   levels.forEach(level => {
@@ -32,7 +32,7 @@ const renderFilterOptions = () => {
     levelSelect.appendChild(option)
   })
 
-  const modalities = getUniqueValues(classes, 'modality')
+  const modalities = getUniqueValues(classes, classItem => classItem.modality)
   const modalitySelect = document.querySelector('#filterModality')
 
   modalities.forEach(modality => {
@@ -42,7 +42,7 @@ const renderFilterOptions = () => {
     modalitySelect.appendChild(option)
   })
 
-  const locations = getUniqueValues(classes, 'location')
+  const locations = getUniqueValues(classes, classItem => classItem.location)
   const locationSelect = document.querySelector('#filterLocation')
 
   locations.forEach(location => {
@@ -54,20 +54,18 @@ const renderFilterOptions = () => {
 }
 
 const filterClasses = (renderFilteredClasses) => {
-  const classes = getClasses()
-
   const titleFilter = document.querySelector('#filterTitle').value
   const levelFilter = document.querySelector('#filterLevel').value
   const modalityFilter = document.querySelector('#filterModality').value
   const locationFilter = document.querySelector('#filterLocation').value
   const dateFilter = document.querySelector('#filterDate').value
 
-  const filteredClasses = classes.filter(classItem => {
-    const matchTitle = !titleFilter || classItem.title === titleFilter
-    const matchLevel = !levelFilter || classItem.level === levelFilter
-    const matchModality = !modalityFilter || classItem.modality === modalityFilter
-    const matchLocation = !locationFilter || classItem.location === locationFilter
-    const matchDate = !dateFilter || classItem.date.startsWith(dateFilter)
+  const filteredClasses = availableClasses.filter(classItem => {
+    const matchTitle = !titleFilter || normalizeValue(getClassTitle(classItem)) === titleFilter
+    const matchLevel = !levelFilter || normalizeValue(classItem.level) === levelFilter
+    const matchModality = !modalityFilter || normalizeValue(classItem.modality) === modalityFilter
+    const matchLocation = !locationFilter || normalizeValue(classItem.location) === locationFilter
+    const matchDate = !dateFilter || getClassDate(classItem).startsWith(dateFilter)
 
     return matchTitle && matchLevel && matchModality && matchLocation && matchDate
   })
@@ -150,7 +148,8 @@ export const Filter = () => {
   `
 }
 
-export const initFilter = (renderFilteredClasses, renderClasses) => {
-  renderFilterOptions()
+export const initFilter = async (renderFilteredClasses, renderClasses) => {
+  availableClasses = await schedulesService.getClasses()
+  renderFilterOptions(availableClasses)
   setupFilterListeners(renderFilteredClasses, renderClasses)
 }

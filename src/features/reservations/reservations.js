@@ -10,6 +10,7 @@ async function renderizarReservas() {
   const totalElemento = document.getElementById('total-reservas')
   const contadorBadge = document.getElementById('contador-badge')
   const resumenCantidad = document.getElementById('resumen-cantidad')
+  const resumenClases = document.getElementById('resumen-clases')
   const contenedorVaciar = document.getElementById('contenedor-vaciar')
 
   if (!contenedor) return
@@ -28,6 +29,7 @@ async function renderizarReservas() {
     if (totalElemento) totalElemento.textContent = '0'
     if (contadorBadge) contadorBadge.textContent = '0 clases'
     if (resumenCantidad) resumenCantidad.textContent = '0'
+    if (resumenClases) resumenClases.innerHTML = '<p class="text-secondary small mb-0">No hay clases seleccionadas.</p>'
     if (contenedorVaciar) contenedorVaciar.classList.add('d-none')
 
     return
@@ -47,7 +49,7 @@ async function renderizarReservas() {
 
     const ubicacion = claseInfo.location || 'Sede Principal'
     const modalidad = item.modality || 'grupal'
-    const cupos = claseInfo.quotas || claseInfo.capacity || 0
+    const cuposDisponibles = claseInfo.availableQuotas ?? claseInfo.availableSlots ?? claseInfo.quotas ?? claseInfo.capacity ?? 0
     const idReserva = item.idReservation || item.id
 
     contenedor.innerHTML += `
@@ -66,8 +68,10 @@ async function renderizarReservas() {
                     <p class="text-light small mb-0">Modalidad: ${capitalize(modalidad)}</p>
                 </div>
                 <div class="col-md-2 my-2 my-md-0">
-                    <label class="text-light small d-block mb-1">Cupos:</label>
-                    <div class="form-control text-center bg-secondary text-light border-0 fw-bold" style="font-size: 0.75rem;">${cupos}</div>
+                  <div class="reservation-seats text-light small">
+                    <div>Disponibles: <strong>${cuposDisponibles}</strong></div>
+                    <div class="mt-1">Tu cupo: <strong>1</strong></div>
+                  </div>
                 </div>
                 <div class="col-md-2 text-end">
                     <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="eliminarItem('${idReserva}')">Quitar</button>
@@ -80,6 +84,15 @@ async function renderizarReservas() {
   if (totalElemento) totalElemento.textContent = misReservas.length
   if (contadorBadge) contadorBadge.textContent = `${misReservas.length} clase${misReservas.length !== 1 ? 's' : ''}`
   if (resumenCantidad) resumenCantidad.textContent = misReservas.length
+  if (resumenClases) {
+    resumenClases.innerHTML = misReservas.map(item => {
+      const titulo = item.catalog?.name || 'Clase sin nombre'
+      return `<div class="border-bottom border-secondary pb-2 mb-2 small d-flex justify-content-between align-items-center w-100">
+        <span class="text-light">${capitalize(titulo)}</span>
+        <strong class="text-warning">1</strong>
+      </div>`
+    }).join('')
+  }
 }
 
 window.eliminarItem = async (idReservation) => {
