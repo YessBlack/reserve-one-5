@@ -16,6 +16,8 @@ const formatCurrency = (amount) => {
   }).format(amount)
 }
 
+const waitForRender = () => new Promise((resolve) => requestAnimationFrame(resolve))
+
 const renderMemberships = async () => {
   const grid = document.querySelector('.membership-grid')
   if (!grid) return
@@ -27,6 +29,7 @@ const renderMemberships = async () => {
       <span>Cargando mensualidades...</span>
     </div>
   `
+  await waitForRender()
 
   try {
     const memberships = await membershipService.getMemberships()

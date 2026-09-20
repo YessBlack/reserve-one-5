@@ -159,6 +159,19 @@ document.addEventListener('DOMContentLoaded', () => {
       const correo = document.getElementById('regCorreo').value.trim().toLowerCase()
       const password = document.getElementById('regPassword').value
       const confirmPassword = document.getElementById('regConfirmPassword').value
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
+
+      if (!emailPattern.test(correo)) {
+        Swal.fire({
+          icon: 'error',
+          title: 'Correo inválido',
+          text: 'Ingresa un correo válido, por ejemplo: nombre@dominio.com.',
+          confirmButtonColor: '#f2be22',
+          background: '#212529',
+          color: '#fff'
+        })
+        return
+      }
 
       if (password !== confirmPassword) {
         Swal.fire({

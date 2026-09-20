@@ -149,12 +149,12 @@ html {
 }
 
 .badge-principiante {
-  background-color: var(--primary-color, #BF2A37);
-  color: #FFFFFF;
+  background-color: var(--secondary-color);
+  color: #000000;
 }
 
 .badge-intermedio {
-  background-color: #8C212B;
+  background-color: var(--primary-color);
   color: #FFFFFF;
 }
 
@@ -200,16 +200,176 @@ html {
   border-color: var(--secondary-color, #F2BE22);
 }
 
-/* SECCIÓN TESTIMONIOS */
-.testimonials-section {
-  background-color: #FFFFFF;
+/* SECCIÓN NUESTROS CAMPEONES */
+.champions-section {
+  background: #FFFFFF;
   color: #0D0D0D;
   border-top: 1px solid #E5E7EB;
+  border-bottom: 1px solid #E5E7EB;
+}
+
+.champions-kicker {
+  display: inline-flex;
+  align-items: center;
+  color: #BF2A37;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.champions-title {
+  color: #0D0D0D;
+  font-size: clamp(2rem, 4vw, 3.2rem);
+  font-weight: 800;
+}
+
+.champions-sub {
+  max-width: 650px;
+  color: #4B5563;
+  line-height: 1.7;
+}
+
+.champions-motto {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  color: #BF2A37;
+  font-size: 0.88rem;
+  font-style: italic;
+}
+
+.champions-motto__line {
+  width: 48px;
+  height: 1px;
+  background: #BF2A37;
+}
+
+.champions-gallery {
+  display: grid;
+  grid-template-columns: 1.35fr 1fr 1fr;
+  grid-template-rows: 230px 180px;
+  gap: 1rem;
+}
+
+.champion-photo {
+  position: relative;
+  min-height: 0;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: #1C1F26;
+}
+
+.champion-photo--feature {
+  grid-row: span 2;
+}
+
+.champion-photo--wide {
+  grid-column: span 2;
+}
+
+.champion-photo::after {
+  position: absolute;
+  inset: 35% 0 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.85));
+  content: '';
+}
+
+.champion-photo img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 0.45s ease;
+}
+
+.champion-photo:hover img {
+  transform: scale(1.04);
+}
+
+.champion-photo figcaption {
+  position: absolute;
+  z-index: 1;
+  right: 1rem;
+  bottom: 0.9rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.champion-photo figcaption strong {
+  color: #FFFFFF;
+  font-size: 0.95rem;
+}
+
+.champion-photo figcaption span {
+  color: #F2BE22;
+  font-size: 0.75rem;
+}
+
+.champions-stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-top: 1rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #E5E7EB;
+}
+
+.champions-stats div {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.champions-stats strong {
+  color: #BF2A37;
+  font-size: 1.1rem;
+}
+
+.champions-stats span {
+  color: #4B5563;
+  font-size: 0.82rem;
+}
+
+@media (max-width: 767.98px) {
+  .champions-motto {
+    justify-content: flex-start;
+  }
+
+  .champions-gallery {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 220px 160px 160px;
+  }
+
+  .champion-photo--feature {
+    grid-column: span 2;
+    grid-row: auto;
+  }
+
+  .champion-photo--wide {
+    grid-column: span 2;
+  }
+
+  .champions-stats {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* SECCIÓN TESTIMONIOS */
+.testimonials-section {
+  background-color: #0D0D0D;
+  color: #FFFFFF;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .testimonials-badge {
   display: inline-block;
-  background-color: rgba(191, 42, 55, 0.08);
+  background-color: rgba(191, 42, 55, 0.16);
   color: var(--primary-color, #BF2A37);
   border: 1px solid rgba(191, 42, 55, 0.2);
   padding: 0.25rem 0.8rem;
@@ -222,19 +382,19 @@ html {
 .testimonials-title {
   font-weight: 800;
   font-size: 2.1rem;
-  color: #0D0D0D;
+  color: #FFFFFF;
 }
 
 .testimonials-sub {
   font-size: 0.95rem;
-  color: #4B5563;
+  color: #A0AAB5;
   max-width: 580px;
   line-height: 1.6;
 }
 
 .testimonial-card {
-  background: #FFFFFF;
-  border: 1px solid #E5E7EB;
+  background: #1C1F26;
+  border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
@@ -260,7 +420,7 @@ html {
 
 .testimonial-text {
   font-size: 0.9rem;
-  color: #374151;
+  color: #D4D7DC;
   line-height: 1.6;
   font-style: italic;
 }
@@ -287,12 +447,12 @@ html {
 .testimonial-author {
   font-size: 0.95rem;
   font-weight: 700;
-  color: #111827;
+  color: #FFFFFF;
 }
 
 .testimonial-role {
   font-size: 0.78rem;
-  color: #6B7280;
+  color: #A0AAB5;
 }
 
 html {

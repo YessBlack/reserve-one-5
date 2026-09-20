@@ -77,6 +77,15 @@ const adminMenuItems = () => {
 const getDisplayName = (user) => [user?.nameUser, user?.lastNameUser]
   .filter(Boolean)
   .join(' ')
+  .split(' ')
+  .slice(0, 2)
+  .join(' ')
+
+const limitDisplayName = (value) => String(value ?? '')
+  .trim()
+  .split(/\s+/)
+  .slice(0, 2)
+  .join(' ')
 
 const template = (session) => {
   if (!session) {
@@ -89,15 +98,18 @@ const template = (session) => {
 
   const name = getDisplayName(session)
     || (session.nombre && (session.apellido || session.apellidos)
-      ? `${session.nombre} ${session.apellido || session.apellidos}`
-      : session.nombre || session.name || session.email || 'Mi cuenta')
+      ? limitDisplayName(`${session.nombre} ${session.apellido || session.apellidos}`)
+      : limitDisplayName(session.nombre || session.name || session.email || 'Mi cuenta'))
   const avatar = session.fotoPerfil || DEFAULT_AVATAR
   const isAdmin = session.role === 'ADMIN'
 
   return `
     <div class="dropdown w-100" id="userMenu">
       <button class="user-chip" type="button" id="userMenuBtn" data-bs-toggle="dropdown" aria-expanded="false">
-        <span class="user-chip__name">${name}</span>
+        <span class="user-chip__identity">
+          <span class="user-chip__name">${name}</span>
+          ${isAdmin ? '<span class="user-chip__role">Administrador</span>' : ''}
+        </span>
         <span class="user-chip__avatar">
           <img src="${avatar}" alt="${name}" />
         </span>
