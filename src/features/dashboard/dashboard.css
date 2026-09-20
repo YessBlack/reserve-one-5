@@ -47,3 +47,64 @@
   font-weight: 700;
   font-size: 1.25rem;
 }
+
+.catalog-filter-card {
+  display: block;
+  height: auto;
+}
+
+.catalog-filter-option {
+  display: flex;
+  align-items: center;
+  min-height: 84px;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--secondary-color);
+  border-radius: 8px;
+  background-color: #212529;
+  color: #fff;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.catalog-filter-card:hover .catalog-filter-option {
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.catalog-description {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+}
+
+.schedule-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 180px;
+  width: 100%;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.schedule-loading__spinner {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0.2rem solid rgba(242, 190, 34, 0.25);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: dashboard-spin 0.8s linear infinite;
+}
+
+.discipline-loading {
+  justify-content: flex-start;
+  padding-left: 0.75rem;
+}
+
+@keyframes dashboard-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

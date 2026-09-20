@@ -5,11 +5,18 @@ import { getImagePath } from '../../shared/js/config.js'
 import { formatScheduleDate } from '../../shared/js/dateUtils.js'
 import { capitalize } from '../../shared/js/utils.js'
 
+const resolveImageSource = (image) => {
+  if (!image) return getImagePath('lanhua-banner-1.png')
+  if (image.startsWith('data:') || image.startsWith('http') || image.startsWith('/')) return image
+  return getImagePath(image.split('/').pop())
+}
+
 async function renderizarReservas() {
   const contenedor = document.getElementById('lista-reservas')
   const totalElemento = document.getElementById('total-reservas')
   const contadorBadge = document.getElementById('contador-badge')
   const resumenCantidad = document.getElementById('resumen-cantidad')
+  const resumenClases = document.getElementById('resumen-clases')
   const contenedorVaciar = document.getElementById('contenedor-vaciar')
 
   if (!contenedor) return
@@ -28,6 +35,7 @@ async function renderizarReservas() {
     if (totalElemento) totalElemento.textContent = '0'
     if (contadorBadge) contadorBadge.textContent = '0 clases'
     if (resumenCantidad) resumenCantidad.textContent = '0'
+    if (resumenClases) resumenClases.innerHTML = '<p class="text-secondary small mb-0">No hay clases seleccionadas.</p>'
     if (contenedorVaciar) contenedorVaciar.classList.add('d-none')
 
     return
@@ -39,7 +47,7 @@ async function renderizarReservas() {
     const claseInfo = item.schedule || {}
     const catalogoInfo = item.catalog || {}
     const titulo = catalogoInfo.name || 'Clase sin nombre'
-    const imagen = claseInfo.image || catalogoInfo.image || 'lanhua-banner-1.png'
+    const imagen = claseInfo.image || catalogoInfo.image
     const nivel = claseInfo.level || 'General'
 
     const fechaText =
@@ -47,14 +55,14 @@ async function renderizarReservas() {
 
     const ubicacion = claseInfo.location || 'Sede Principal'
     const modalidad = item.modality || 'grupal'
-    const cupos = claseInfo.quotas || claseInfo.capacity || 0
+    const cuposDisponibles = claseInfo.availableQuotas ?? claseInfo.availableSlots ?? claseInfo.quotas ?? claseInfo.capacity ?? 0
     const idReserva = item.idReservation || item.id
 
     contenedor.innerHTML += `
         <div class="card p-3 bg-dark border-secondary mb-2">
             <div class="row align-items-center">
                 <div class="col-md-3 mb-2 mb-md-0">
-                    <img src="${getImagePath(imagen.split('/').pop())}" class="img-fluid rounded object-fit-cover" alt="${titulo}" style="height: 80px; width: 100%;">
+                    <img src="${resolveImageSource(imagen)}" class="img-fluid rounded object-fit-cover" alt="${titulo}" style="height: 80px; width: 100%;">
                 </div>
                 <div class="col-md-5">
                     <div class="d-flex align-items-center gap-2 mb-1">
@@ -66,8 +74,10 @@ async function renderizarReservas() {
                     <p class="text-light small mb-0">Modalidad: ${capitalize(modalidad)}</p>
                 </div>
                 <div class="col-md-2 my-2 my-md-0">
-                    <label class="text-light small d-block mb-1">Cupos:</label>
-                    <div class="form-control text-center bg-secondary text-light border-0 fw-bold" style="font-size: 0.75rem;">${cupos}</div>
+                  <div class="reservation-seats text-light small">
+                    <div>Disponibles: <strong>${cuposDisponibles}</strong></div>
+                    <div class="mt-1">Tu cupo: <strong>1</strong></div>
+                  </div>
                 </div>
                 <div class="col-md-2 text-end">
                     <button class="btn btn-sm btn-outline-danger px-2 py-1" onclick="eliminarItem('${idReserva}')">Quitar</button>
@@ -80,6 +90,15 @@ async function renderizarReservas() {
   if (totalElemento) totalElemento.textContent = misReservas.length
   if (contadorBadge) contadorBadge.textContent = `${misReservas.length} clase${misReservas.length !== 1 ? 's' : ''}`
   if (resumenCantidad) resumenCantidad.textContent = misReservas.length
+  if (resumenClases) {
+    resumenClases.innerHTML = misReservas.map(item => {
+      const titulo = item.catalog?.name || 'Clase sin nombre'
+      return `<div class="border-bottom border-secondary pb-2 mb-2 small d-flex justify-content-between align-items-center w-100">
+        <span class="text-light">${capitalize(titulo)}</span>
+        <strong class="text-warning">1</strong>
+      </div>`
+    }).join('')
+  }
 }
 
 window.eliminarItem = async (idReservation) => {

@@ -47,9 +47,20 @@
   font-weight: 600;
   color: var(--text-color);
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 120px;
+}
+
+.user-chip__identity {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.15;
+}
+
+.user-chip__role {
+  color: #bf2a37;
+  font-size: 0.68rem;
+  font-weight: 700;
+  margin-top: 2px;
 }
 
 .user-chip__chevron {
@@ -112,4 +123,23 @@
 .user-chip:hover .user-chip__name,
 .user-chip:hover .user-chip__chevron {
   color: var(--primary-color);
+}
+
+@media (max-width: 991.98px) {
+
+  #authNavContainer,
+  #authNavContainerAdmin {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+  }
+
+  #userMenu {
+    width: auto !important;
+    margin: 0 auto;
+  }
+
+  .user-chip__identity {
+    align-items: center;
+  }
 }

@@ -3,7 +3,12 @@ import { setMinDateToday } from '../../shared/js/dateUtils.js'
 import { ScheduleCard } from './components/ScheduleCard/ScheduleCard.js'
 import { ScheduleModal } from './components/ScheduleModal/ScheduleModal.js'
 import { schedulesService } from '../../services/schedulesService.js'
+import { usersService } from '../../services/userService.js'
+import { catalogService } from '../../services/catalogService.js'
+import { fileToBase64 } from '../../shared/js/utils.js'
 import api from '../../services/axiosConfig.js'
+
+let form
 
 const getClasses = async () => {
   return await schedulesService.getClasses()
@@ -30,32 +35,129 @@ const deleteClass = async (id) => {
   }
 }
 
-const renderModalContentForm = () => {
+let catalogItems = []
+let dashboardClasses = []
+let selectedCatalogId = 'all'
+let professorUsers = []
+
+const renderModalContentForm = (professors, catalogs) => {
   const modal = document.querySelector('#staticBackdrop')
-  modal.innerHTML = ScheduleModal()
+  modal.innerHTML = ScheduleModal(null, professors, catalogs)
 }
 
-const renderClasses = async () => {
-  const classes = await getClasses()
+const getProfessors = async () => {
+  const users = await usersService.getAllUsersFromApi()
+  professorUsers = users.filter((user) => (user.nameRol ?? '').toUpperCase() === 'ADMIN')
+  return professorUsers
+}
 
+const getCatalogItems = async () => catalogService.getItemsCatalog()
+
+const getCatalogImage = (catalogId) => {
+  const catalog = catalogItems.find((item) => String(item.id) === String(catalogId))
+  return catalog?.image ?? ''
+}
+
+const updateCatalogImagePreview = () => {
+  const preview = document.querySelector('#catalogImagePreview')
+  if (!preview) return
+
+  const image = form.dataset.currentImage || getCatalogImage(form.idCatalog.value)
+  preview.src = image
+  preview.classList.toggle('d-none', !image)
+}
+
+const setupImagePreview = () => {
+  form.idCatalog.addEventListener('change', updateCatalogImagePreview)
+  form.image.addEventListener('change', () => {
+    const file = form.image.files[0]
+    const preview = document.querySelector('#catalogImagePreview')
+    if (!file || !preview) {
+      updateCatalogImagePreview()
+      return
+    }
+
+    preview.src = URL.createObjectURL(file)
+    preview.classList.remove('d-none')
+  })
+  updateCatalogImagePreview()
+}
+
+const getClassCatalogId = (classItem) => classItem.idCatalog
+  ?? classItem.catalogId
+  ?? classItem.catalog?.idCatalog
+  ?? classItem.catalog?.id
+
+const getClassUserId = (classItem) => classItem.idUser
+  ?? classItem.userId
+  ?? classItem.user?.idUser
+  ?? classItem.professor?.idUser
+
+const enrichClassProfessor = (classItem) => {
+  const existingProfessorName = classItem.userName
+    || classItem.user?.nameUser
+    || classItem.user?.name
+    || classItem.professor?.nameUser
+    || classItem.professor?.name
+  if (existingProfessorName) return classItem
+
+  const professor = professorUsers.find((user) => String(user.idUser) === String(getClassUserId(classItem)))
+  return professor ? { ...classItem, user: professor } : classItem
+}
+
+const renderSchedulesLoading = () => {
+  const loadingMarkup = `
+    <div class="schedule-loading" role="status" aria-live="polite">
+      <div class="schedule-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando horarios...</span>
+    </div>
+  `
+  document.querySelector('#schedules-grupal').innerHTML = loadingMarkup
+  document.querySelector('#schedules-individual').innerHTML = loadingMarkup
+}
+
+const renderDisciplinesLoading = () => {
+  const container = document.querySelector('#dashboardDisciplinesContainer')
+  if (!container) return
+
+  container.innerHTML = `
+    <div class="schedule-loading discipline-loading" role="status" aria-live="polite">
+      <div class="schedule-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando disciplinas y programas...</span>
+    </div>
+  `
+}
+
+const waitForRender = () => new Promise((resolve) => requestAnimationFrame(resolve))
+
+const renderClasses = async (classes = null) => {
   const grupalContainer = document.querySelector('#schedules-grupal')
   const individualContainer = document.querySelector('#schedules-individual')
 
   if (!grupalContainer || !individualContainer) return
 
+  renderSchedulesLoading()
+  await waitForRender()
+
+  dashboardClasses = (classes ?? await getClasses()).map(enrichClassProfessor)
+  const visibleClasses = selectedCatalogId === 'all'
+    ? dashboardClasses
+    : dashboardClasses.filter((classItem) => String(getClassCatalogId(classItem)) === String(selectedCatalogId))
+
   grupalContainer.innerHTML = ''
   individualContainer.innerHTML = ''
 
-  if (classes.length === 0) {
+  if (visibleClasses.length === 0) {
     grupalContainer.innerHTML = Alert({
       variant: 'info',
-      title: 'Aún no tienes horarios agregados',
-      text: 'Haz clic en "Agregar Horario" para crear el primero.'
+      title: selectedCatalogId === 'all' ? 'Aún no tienes horarios agregados' : 'No hay horarios para este programa',
+      text: selectedCatalogId === 'all' ? 'Haz clic en "Agregar Horario" para crear el primero.' : 'Selecciona otro programa para ver sus horarios.'
     })
+    individualContainer.innerHTML = ''
     return
   }
 
-  classes.forEach(classItem => {
+  visibleClasses.forEach(classItem => {
     const modalidad = classItem.modality ? classItem.modality.toLowerCase() : 'grupal'
 
     if (modalidad === 'grupal') {
@@ -76,7 +178,9 @@ const renderClasses = async () => {
 const resetFormState = () => {
   form.reset()
   delete form.dataset.editId
-  form.image.required = true
+  delete form.dataset.currentImage
+  form.image.required = false
+  updateCatalogImagePreview()
   document.querySelector('#staticBackdropLabel').textContent = 'Agregar Horario'
 
   const submitBtn = document.querySelector('#addSchedule')
@@ -122,9 +226,13 @@ const fillFormForEdit = (classToEdit, classId) => {
   form.quotas.value = classToEdit.quotas ?? classToEdit.capacity ?? ''
   setSelectValue(form.location, classToEdit.location)
   const userId = classToEdit.idUser ?? classToEdit.userId ?? classToEdit.user?.idUser ?? classToEdit.user?.id ?? classToEdit.professor?.idUser ?? classToEdit.professor?.id
-  const userName = classToEdit.userName ?? classToEdit.user?.name ?? classToEdit.professor?.name ?? ''
+  const assignedUser = classToEdit.user ?? classToEdit.professor ?? {}
+  const userName = classToEdit.userName
+    || [assignedUser.nameUser, assignedUser.lastNameUser].filter(Boolean).join(' ')
+    || assignedUser.name
+    || ''
   setSelectValue(form.idUser, userId, userName)
-  form.image.value = classToEdit.image ?? classToEdit.catalog?.image ?? ''
+  form.dataset.currentImage = classToEdit.image ?? classToEdit.catalog?.image ?? getCatalogImage(catalogId)
 
   const scheduleDate = classToEdit.date ?? classToEdit.scheduleDate ?? ''
   form.scheduleDate.value = scheduleDate.replace(' ', 'T').slice(0, 16)
@@ -142,24 +250,33 @@ const handleSubmitSchedule = () => {
   form.addEventListener('submit', async (event) => {
     event.preventDefault()
 
-    const formData = new FormData(form)
-    const schedule = Object.fromEntries(formData)
-    const editId = form.dataset.editId
+    const submitButton = document.querySelector('#addSchedule')
+    if (submitButton.disabled) return
 
-    const scheduleData = {
-      idCatalog: normalizeId(schedule.idCatalog),
-      level: schedule.level,
-      quotas: Number(schedule.quotas),
-      scheduleDate: schedule.scheduleDate,
-      location: schedule.location,
-      modality: schedule.modality,
-      idUser: normalizeId(schedule.idUser),
-      image: schedule.image
-    }
-
-    console.log('Datos del horario a enviar al servidor:', scheduleData)
+    const originalButtonText = submitButton.textContent
+    submitButton.disabled = true
+    submitButton.innerHTML = '<i class="fa-solid fa-spinner fa-spin me-1" aria-hidden="true"></i> Guardando...'
 
     try {
+      const formData = new FormData(form)
+      const schedule = Object.fromEntries(formData)
+      const editId = form.dataset.editId
+      const imageFile = form.image.files[0]
+      const image = imageFile && imageFile.size > 0
+        ? await fileToBase64(imageFile)
+        : form.dataset.currentImage || getCatalogImage(schedule.idCatalog)
+
+      const scheduleData = {
+        idCatalog: normalizeId(schedule.idCatalog),
+        level: schedule.level,
+        quotas: Number(schedule.quotas),
+        scheduleDate: schedule.scheduleDate,
+        location: schedule.location,
+        modality: schedule.modality,
+        idUser: normalizeId(schedule.idUser),
+        image
+      }
+
       if (editId) {
         await api.put(`/schedules/${editId}`, scheduleData)
       } else {
@@ -180,7 +297,6 @@ const handleSubmitSchedule = () => {
       const bootstrapModal = bootstrap.Modal.getOrCreateInstance(modalElement)
       bootstrapModal.hide()
     } catch (error) {
-      console.log(error)
       const serverError = error.response?.data
       const responseMessage = typeof serverError === 'string' ? serverError.trim() : ''
       const errorMessage = responseMessage || serverError?.message || serverError?.error || `Error HTTP ${error.response?.status || 'desconocido'}`
@@ -191,6 +307,9 @@ const handleSubmitSchedule = () => {
         title: 'Error',
         text: errorMessage
       })
+    } finally {
+      submitButton.disabled = false
+      submitButton.textContent = originalButtonText
     }
   })
 }
@@ -265,8 +384,7 @@ const renderDashboardDisciplines = async () => {
   if (!container) return
 
   try {
-    const savedPrograms = window.localStorage.getItem('lanhua_programs')
-    const programs = savedPrograms ? JSON.parse(savedPrograms) : []
+    const programs = catalogItems
 
     container.innerHTML = ''
 
@@ -275,23 +393,50 @@ const renderDashboardDisciplines = async () => {
       return
     }
 
-    programs.forEach(program => {
-      const programTitle = program.title ?? program.name ?? 'Programa sin nombre'
-
-      container.innerHTML += `
-        <div class="col-md-6 col-lg-4">
-          <div class="card bg-dark border-secondary text-white p-3 h-100">
+    container.innerHTML += `
+      <div class="col-md-6 col-lg-4">
+        <button type="button" class="catalog-filter-card w-100 border-0 p-0 bg-transparent text-start" data-catalog-id="all">
+          <div class="catalog-filter-option">
             <div class="d-flex align-items-center gap-3">
-              <img src="${program.image || '../../assets/lanhua-banner-1.png'}" alt="${programTitle}" class="rounded-circle object-fit-cover bg-secondary" style="width: 50px; height: 50px;">
+              <div class="rounded-circle bg-warning text-dark d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                <i class="fa-solid fa-layer-group" aria-hidden="true"></i>
+              </div>
               <div>
-                <h5 class="h6 mb-1 text-warning text-uppercase fw-bold">${programTitle}</h5>
-                <span class="badge bg-secondary mb-1">${program.category || 'General'}</span>
-                <p class="small text-light mb-0" style="font-size: 12px;">${program.description || ''}</p>
+                <h5 class="h6 mb-1 text-warning text-uppercase fw-bold">Todos</h5>
+                <p class="small text-light mb-0">Mostrar todos los horarios</p>
               </div>
             </div>
           </div>
+        </button>
+      </div>
+    `
+
+    programs.forEach(program => {
+      const programTitle = program.title ?? 'Programa sin nombre'
+
+      container.innerHTML += `
+        <div class="col-md-6 col-lg-4">
+          <button type="button" class="catalog-filter-card w-100 border-0 p-0 bg-transparent text-start" data-catalog-id="${program.id}">
+            <div class="catalog-filter-option">
+              <div class="d-flex align-items-center gap-3">
+                <img src="${program.image || '../../assets/lanhua-banner-1.png'}" alt="${programTitle}" class="rounded-circle object-fit-cover bg-secondary" style="width: 50px; height: 50px;">
+                <div>
+                  <h5 class="h6 mb-1 text-warning text-uppercase fw-bold">${programTitle}</h5>
+                  <p class="catalog-description small text-light mb-0" style="font-size: 12px;">${program.description || ''}</p>
+                </div>
+              </div>
+            </div>
+          </button>
         </div>
       `
+    })
+
+    container.addEventListener('click', async (event) => {
+      const filterButton = event.target.closest('[data-catalog-id]')
+      if (!filterButton) return
+
+      selectedCatalogId = filterButton.dataset.catalogId
+      await renderClasses(dashboardClasses)
     })
   } catch (error) {
     console.error('Error cargando disciplinas:', error)
@@ -299,17 +444,25 @@ const renderDashboardDisciplines = async () => {
   }
 }
 
-renderModalContentForm()
+const initDashboard = async () => {
+  renderDisciplinesLoading()
+  const [professors, catalogs] = await Promise.all([getProfessors(), getCatalogItems()])
+  catalogItems = catalogs
+  renderModalContentForm(professors, catalogs)
 
-const form = document.querySelector('#scheduleForm')
+  form = document.querySelector('#scheduleForm')
 
-if (form) {
-  renderClasses()
-  setupEventListeners()
-  setupModalReset()
-  setMinDateToday('#scheduleDate')
-  handleSubmitSchedule()
-  validateForm()
+  if (form) {
+    await renderClasses()
+    setupEventListeners()
+    setupModalReset()
+    setMinDateToday('#scheduleDate')
+    handleSubmitSchedule()
+    validateForm()
+    setupImagePreview()
+  }
+
+  renderDashboardDisciplines()
 }
 
-renderDashboardDisciplines()
+initDashboard()

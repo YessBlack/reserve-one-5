@@ -1,4 +1,3 @@
-/* Por: Santiago Castrillón Rojo */
 .class-card {
   border-color: var(--surface-color) !important;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -23,21 +22,6 @@
 
 .class-title {
   color: var(--primary-color);
-}
-
-.class-badge-Kids,
-.class-badge-Regular,
-.class-badge-Estudiantes,
-.class-badge-Gratis,
-.class-badge-FullPass,
-.class-badge-EspecializadaSinMensualidad,
-.class-badge-EspecializadaAdicional {
-  background-color: #000000;
-  color: #F2BE22;
-  border: 1px solid #F2BE22;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.5px;
 }
 
 .class-item {

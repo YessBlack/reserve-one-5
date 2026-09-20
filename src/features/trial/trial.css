@@ -1,5 +1,8 @@
 #contact {
-  background-image: url('../../assets/lanhua-banner-1.png');
+  padding-top: 5rem !important;
+  padding-bottom: 5rem !important;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.32), rgba(0, 0, 0, 0.32)),
+    url('../../assets/lanhua-banner-1.png');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;

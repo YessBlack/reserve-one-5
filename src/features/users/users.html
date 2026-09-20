@@ -61,7 +61,7 @@
         <nav class="navbar navbar-expand-lg px-0">
           <a class="navbar-brand d-flex align-items-center" href="../dashboard/dashboard.html">
             <img src="../../assets/LogoSinFondo.png" class="logo" alt="Logo Lan Hua">
-            <span class="ms-2 fw-semibold brand-name">LAN HUA ADMIN</span>
+            <span class="ms-2 fw-semibold brand-name">LAN HUA</span>
           </a>
           <button class="navbar-toggler border-0 shadow-none" type="button" data-bs-toggle="collapse"
             data-bs-target="#adminNavbar">
@@ -241,7 +241,7 @@
       const adminHeader = document.getElementById('adminHeader');
 
       if (session) {
-        if (session.role === 'admin') {
+        if ((session.role || '').toUpperCase() === 'ADMIN') {
           adminHeader.classList.remove('d-none');
           loadUserMenu('authNavContainerAdmin');
         } else {
@@ -255,7 +255,7 @@
     });
   </script>
 
-  <script src="users.js"></script>
+  <script src="users.js" type="module"></script>
 
 </body>
 

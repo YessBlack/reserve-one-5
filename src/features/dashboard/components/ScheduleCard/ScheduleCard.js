@@ -3,7 +3,12 @@ import { capitalize } from '../../../../shared/js/utils.js'
 export const ScheduleCard = (classItem) => {
   const classId = classItem.idSchedule ?? classItem.id
   const className = classItem.catalog?.name ?? classItem.catalog?.title ?? classItem.title ?? 'Sin nombre'
-  const professorName = classItem.userName ?? classItem.user?.name ?? classItem.professor?.name ?? classItem.professor ?? ''
+  const assignedUser = classItem.user ?? classItem.professor
+  const nestedProfessorName = [assignedUser?.nameUser, assignedUser?.lastNameUser].filter(Boolean).join(' ')
+  const professorName = classItem.userName
+    || nestedProfessorName
+    || assignedUser?.name
+    || (typeof classItem.professor === 'string' ? classItem.professor : '')
 
   return `
     <article class="class-card border">
