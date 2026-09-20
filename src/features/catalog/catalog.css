@@ -31,3 +31,30 @@
 .form-control[type="time"] {
   font-size: 0.9rem;
 }
+
+.catalog-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 180px;
+  width: 100%;
+  grid-column: 1 / -1;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+.catalog-loading__spinner {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 0.2rem solid rgba(242, 190, 34, 0.25);
+  border-top-color: var(--primary-color);
+  border-radius: 50%;
+  animation: catalog-spin 0.8s linear infinite;
+}
+
+@keyframes catalog-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

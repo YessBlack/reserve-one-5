@@ -15,11 +15,23 @@ const userEmailInput = document.getElementById('userEmail')
 const userPasswordInput = document.getElementById('userPassword')
 const passwordHint = document.getElementById('passwordHint')
 const btnDeleteUser = document.getElementById('btnDeleteUser')
+let users = []
 
 const formatDate = (isoString) => {
+  if (!isoString) return 'Sin fecha'
   const date = new Date(isoString)
   return date.toLocaleDateString('es-CO', { day: '2-digit', month: 'short', year: 'numeric' })
 }
+
+const getUserId = (user) => user.idUser
+
+const getUserName = (user) => user.nameUser ?? ''
+
+const getUserLastName = (user) => user.lastNameUser ?? ''
+
+const getUserEmail = (user) => user.emailUser ?? ''
+
+const getUserRole = (user) => user.nameRol ?? ''
 
 const renderUsers = (list) => {
   tableBody.innerHTML = ''
@@ -36,20 +48,20 @@ const renderUsers = (list) => {
   list.forEach((user) => {
     const tr = document.createElement('tr')
 
-    const fullName = user.nombre && (user.apellido || user.apellidos)
-      ? `${user.nombre} ${user.apellido || user.apellidos}`
-      : user.nombre
+    const name = getUserName(user)
+    const lastName = getUserLastName(user)
+    const fullName = [name, lastName].filter(Boolean).join(' ')
 
     tr.innerHTML = `
       <td>
-        <button class="btnEditUser" data-id="${user.id}" title="Editar usuario">
+        <button class="btnEditUser" data-id="${getUserId(user)}" title="Editar usuario">
           <i class="fa-solid fa-pen"></i>
         </button>
       </td>
       <td class="text-muted">${fullName}</td>
-      <td class="text-muted">${user.email}</td>
-      <td class="text-muted">${user.role}</td>
-      <td class="text-muted">${formatDate(user.createdAt)}</td>
+      <td class="text-muted">${getUserEmail(user)}</td>
+      <td class="text-muted">${getUserRole(user)}</td>
+      <td class="text-muted">${formatDate(user.creationDate)}</td>
     `
 
     tableBody.appendChild(tr)
@@ -59,11 +71,13 @@ const renderUsers = (list) => {
 const resetForm = () => {
   userForm.reset()
   userIdInput.value = ''
+  userEmailInput.disabled = false
 }
 
 const openCreateModal = () => {
   resetForm()
   modalTitle.textContent = 'Agregar Usuario'
+  userPasswordInput.disabled = false
   userPasswordInput.required = true
   passwordHint.classList.add('d-none')
   btnDeleteUser.classList.add('d-none')
@@ -71,49 +85,58 @@ const openCreateModal = () => {
 }
 
 const openEditModal = (id) => {
-  const user = usersService.getUserById(id)
+  const user = users.find((item) => String(getUserId(item)) === String(id))
   if (!user) return
 
   resetForm()
   modalTitle.textContent = 'Editar Usuario'
-  userIdInput.value = user.id
-  userNombreInput.value = user.nombre
-  userApellidoInput.value = user.apellido || user.apellidos || ''
-  userEmailInput.value = user.email
+  userIdInput.value = getUserId(user)
+  userNombreInput.value = getUserName(user)
+  userApellidoInput.value = getUserLastName(user)
+  userEmailInput.value = getUserEmail(user)
+  userEmailInput.disabled = true
+  userPasswordInput.disabled = true
+  userPasswordInput.value = ''
   userPasswordInput.required = false
   passwordHint.classList.remove('d-none')
   btnDeleteUser.classList.remove('d-none')
   bootstrapModal.show()
 }
 
-userForm.addEventListener('submit', (event) => {
+userForm.addEventListener('submit', async (event) => {
   event.preventDefault()
 
   const id = userIdInput.value
   const nombre = userNombreInput.value.trim()
   const apellido = userApellidoInput.value.trim()
-  const email = userEmailInput.value.trim()
   const password = userPasswordInput.value
+  const submitButton = userForm.querySelector('button[type="submit"]')
+  submitButton.disabled = true
 
-  let result
+  try {
+    if (id) {
+      await usersService.updateAdminFromApi(id, {
+        nameUser: nombre,
+        lastNameUser: apellido,
+        emailUser: userEmailInput.value
+      })
+    } else {
+      await usersService.createAdminFromApi({
+        nameUser: nombre,
+        lastNameUser: apellido,
+        emailUser: userEmailInput.value.trim(),
+        passwordUser: password
+      })
+    }
 
-  if (id) {
-    const changes = { nombre, apellido, email }
-    if (password) changes.password = password
-
-    result = usersService.updateUser(id, changes)
-  } else {
-    result = usersService.registerUser({ nombre, apellido, email, password, role: 'admin' })
+    bootstrapModal.hide()
+    await loadUsers()
+    Swal.fire({ icon: 'success', title: id ? 'Usuario actualizado' : 'Usuario agregado', timer: 1500, showConfirmButton: false })
+  } catch (error) {
+    Swal.fire({ icon: 'error', title: 'Ups...', text: getApiErrorMessage(error) })
+  } finally {
+    submitButton.disabled = false
   }
-
-  if (!result.success) {
-    Swal.fire({ icon: 'error', title: 'Ups...', text: result.message })
-    return
-  }
-
-  bootstrapModal.hide()
-  renderUsers(usersService.getAdmins())
-  Swal.fire({ icon: 'success', title: id ? 'Usuario actualizado' : 'Usuario agregado', timer: 1500, showConfirmButton: false })
 })
 
 btnDeleteUser.addEventListener('click', () => {
@@ -131,10 +154,15 @@ btnDeleteUser.addEventListener('click', () => {
   }).then((confirmResult) => {
     if (!confirmResult.isConfirmed) return
 
-    usersService.deleteUser(id)
-    bootstrapModal.hide()
-    renderUsers(usersService.getAdmins())
-    Swal.fire({ icon: 'success', title: 'Usuario eliminado', timer: 1500, showConfirmButton: false })
+    usersService.deleteUserFromApi(id)
+      .then(async () => {
+        bootstrapModal.hide()
+        await loadUsers()
+        Swal.fire({ icon: 'success', title: 'Usuario eliminado', timer: 1500, showConfirmButton: false })
+      })
+      .catch((error) => {
+        Swal.fire({ icon: 'error', title: 'No se pudo eliminar', text: getApiErrorMessage(error) })
+      })
   })
 })
 
@@ -147,4 +175,17 @@ tableBody.addEventListener('click', (event) => {
 
 document.getElementById('addProgram').addEventListener('click', openCreateModal)
 
-renderUsers(usersService.getAdmins())
+const getApiErrorMessage = (error) => error.response?.data?.message
+  || error.response?.data?.error
+  || 'No fue posible completar la operación en el servidor.'
+
+const loadUsers = async () => {
+  const list = await usersService.getAllUsersFromApi()
+  users = list.filter((user) => getUserRole(user).toUpperCase() === 'ADMIN')
+  renderUsers(users)
+}
+
+loadUsers().catch((error) => {
+  renderUsers([])
+  Swal.fire({ icon: 'error', title: 'No se pudieron cargar los usuarios', text: getApiErrorMessage(error) })
+})

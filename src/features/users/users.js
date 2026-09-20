@@ -1,250 +1,182 @@
 /* eslint-disable no-undef */
-const USERS_COLLECTION = 'lanhua_users'
-const CURRENT_SESSION = 'lanhua_session'
+import { usersService } from '../../services/userService.js'
 
-const seedDefaultAdmin = () => {
-  const USERS_KEY = 'lanhua_users'
-  const users = JSON.parse(window.localStorage.getItem(USERS_KEY)) || []
+const SESSION_KEY = 'lanhua_session'
 
-  const defaultAdminEmail = 'admin@lanhua.com'
-  const adminExists = users.some(u => u.email === defaultAdminEmail)
+const getSession = () => {
+  const session = window.localStorage.getItem(SESSION_KEY)
+  return session ? JSON.parse(session) : null
+}
 
-  if (!adminExists) {
-    const provisionalAdmin = {
-      id: 1, 
-      nombre: 'Administrador',
-      apellido: 'Sistema Lan Hua',
-      email: defaultAdminEmail,
-      password: 'Admin1234',
-      role: 'ADMIN',
-      documento: '1000000000',
-      direccion: 'Sede Principal Laureles',
-      telefono: '3130000000',
-      contactoEmergenciaNombre: 'Soporte Técnico',
-      contactoEmergenciaParentesco: 'Sistema',
-      contactoEmergenciaTelefono: '3130000000',
-      eps: 'Sura',
-      rh: 'O+',
-      condicionesMedicas: 'Ninguna',
-      createdAt: new Date().toISOString(),
-      lastEpsUpdateDate: new Date().toISOString().split('T')[0]
-    }
+const setValue = (id, value) => {
+  const input = document.getElementById(id)
+  if (input) input.value = value ?? ''
+}
 
-    users.push(provisionalAdmin)
-    window.localStorage.setItem(USERS_COLLECTION, JSON.stringify(users))
-  }
-};
+const showEpsExpirationWarning = (dateEps) => {
+  if (!dateEps) return
 
-document.addEventListener('DOMContentLoaded', () => {
-  seedDefaultAdmin()
-  const currentSessionData = JSON.parse(window.localStorage.getItem(CURRENT_SESSION))
+  const lastUpdate = new Date(`${dateEps}T00:00:00`)
+  const diffDays = Math.floor((Date.now() - lastUpdate.getTime()) / (1000 * 60 * 60 * 24))
 
-  if (!currentSessionData) {
-    window.location.href = '../auth/auth.html';
-    return;
-  }
+  if (diffDays < 90) return
 
-  const clientHeaderNode = document.getElementById('clientHeader');
-  const adminHeaderNode = document.getElementById('adminHeader');
+  Swal.fire({
+    icon: 'warning',
+    title: '¡Certificado de EPS vencido!',
+    text: 'Actualiza la fecha y adjunta un certificado vigente.',
+    confirmButtonColor: '#f2be22',
+    background: '#212529',
+    color: '#fff'
+  })
+}
 
-  if (currentSessionData.role === 'admin') {
-    adminHeaderNode?.classList.remove('d-none');
-    setupAdminLogout();
+const populateProfileForm = (user, information = {}) => {
+  const safeInformation = information || {}
+  setValue('inputFirstName', user.nameUser)
+  setValue('inputLastName', user.lastNameUser)
+  setValue('inputDocumentId', safeInformation.numberDni)
+  setValue('inputAddress', safeInformation.address)
+  setValue('inputPhone', safeInformation.userPhone)
+  setValue('inputEmergencyName', safeInformation.contactName)
+  setValue('inputEmergencyRelation', safeInformation.kinship)
+  setValue('inputEmergencyPhone', safeInformation.contactPhone)
+  setValue('selectHealthProvider', safeInformation.eps)
+  setValue('selectBloodType', safeInformation.rh)
+  setValue('textareaMedicalConditions', safeInformation.medicConditions)
+  setValue('inputEpsUpdateDate', safeInformation.dateEps)
+
+  showEpsExpirationWarning(safeInformation.dateEps)
+}
+
+const setupHeaders = (session) => {
+  const clientHeader = document.getElementById('clientHeader')
+  const adminHeader = document.getElementById('adminHeader')
+  const role = (session.role || '').toUpperCase()
+
+  if (role === 'ADMIN') {
+    adminHeader?.classList.remove('d-none')
   } else {
-    clientHeaderNode?.classList.remove('d-none');
+    clientHeader?.classList.remove('d-none')
   }
+}
 
-  populateProfileForm(currentSessionData);
+const setupAvatarPreview = () => {
+  const imageUploader = document.getElementById('profileImageInput')
+  if (!imageUploader) return
 
-  const imageUploader = document.getElementById('profileImageInput');
-  if (imageUploader) {
-    imageUploader.addEventListener('change', handleAvatarPreview);
-  }
+  imageUploader.addEventListener('change', (event) => {
+    const file = event.target.files[0]
+    if (!file) return
 
-  const profileForm = document.getElementById('profileConfigurationForm');
-  if (profileForm) {
-    profileForm.addEventListener('submit', (event) => {
-      event.preventDefault()
-      saveProfileConfiguration(currentSessionData)
+    const reader = new FileReader()
+    reader.addEventListener('load', (loadEvent) => {
+      const avatar = document.getElementById('avatarPreview')
+      if (avatar) avatar.src = loadEvent.target.result
     })
-  }
+    reader.readAsDataURL(file)
+  })
+}
+
+const setupCancelButton = () => {
+  const cancelButton = document.getElementById('btnCancelUpdates')
+  if (!cancelButton) return
+
+  cancelButton.addEventListener('click', () => {
+    window.location.href = '../catalog_users/catalog_user.html'
+  })
+}
+
+const readInformationChangesFromForm = () => ({
+  nameUser: document.getElementById('inputFirstName').value.trim(),
+  lastNameUser: document.getElementById('inputLastName').value.trim(),
+  numberDni: document.getElementById('inputDocumentId').value.trim(),
+  address: document.getElementById('inputAddress').value.trim(),
+  userPhone: document.getElementById('inputPhone').value.trim(),
+  contactName: document.getElementById('inputEmergencyName').value.trim(),
+  kinship: document.getElementById('inputEmergencyRelation').value.trim(),
+  contactPhone: document.getElementById('inputEmergencyPhone').value.trim(),
+  eps: document.getElementById('selectHealthProvider').value.trim(),
+  rh: document.getElementById('selectBloodType').value,
+  medicConditions: document.getElementById('textareaMedicalConditions').value.trim(),
+  dateEps: document.getElementById('inputEpsUpdateDate').value || null
 })
 
-function checkEpsCertificateExpiration(session) {
-  const allUsers = JSON.parse(window.localStorage.getItem(USERS_COLLECTION)) || []
-  const fullUserData = allUsers.find(user => user.id === session.id) || session
+const setupProfileForm = (initialUser, initialInformation) => {
+  const profileForm = document.getElementById('profileConfigurationForm')
+  if (!profileForm) return
 
-  if (!fullUserData.lastEpsUpdateDate) return
+  let user = initialUser
+  let information = initialInformation
 
-  const [year, month, day] = fullUserData.lastEpsUpdateDate.split('T')[0].split('-')
-  const lastUpdate = new Date(year, month - 1, day)
-  const currentDate = new Date()
+  profileForm.addEventListener('submit', async (event) => {
+    event.preventDefault()
 
-  const diffTime = Math.abs(currentDate - lastUpdate)
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+    const changes = readInformationChangesFromForm()
+    const submitButton = profileForm.querySelector('button[type="submit"]')
+    if (submitButton) submitButton.disabled = true
 
-  if (diffDays >= 90) {
-    Swal.fire({
-      icon: 'warning',
-      title: '¡Certificado de EPS Vencido!',
-      html: 'Han pasado más de 3 meses desde tu última actualización de EPS.<br><br>Por favor <strong>actualiza la fecha y adjunta tu certificado de afiliación vigente</strong>.',
-      confirmButtonText: 'Actualizar Ahora',
-      confirmButtonColor: '#f2be22',
-      background: '#212529',
-      color: '#fff'
-    })
-  }
+    const result = await usersService.updateCurrentUserFromApi(user, information, changes)
 
-const btnCancelUpdates = document.getElementById('btnCancelUpdates')
-if (btnCancelUpdates) {
-  btnCancelUpdates.addEventListener('click', () => {
-    Swal.fire({
-      title: '¿Estás seguro de cancelar?',
-      text: 'Si cancelas ahora, perderás los cambios no guardados en tu información de perfil.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonText: 'Sí, continuar más tarde',
-      cancelButtonText: 'No, seguir ahora',
-      reverseButtons: true,
-      background: '#212529',
-      color: '#fff',
-      confirmButtonColor: '#dc3545',
-      cancelButtonColor: '#343a40'
-    }).then((result) => {
-      if (result.isConfirmed) {
-        window.location.href = '../catalog_users/catalog_user.html'
+    if (submitButton) submitButton.disabled = false
+
+    if (result.user) {
+      user = result.user
+      if (result.information) {
+        information = result.information
       }
+      populateProfileForm(user, information)
+    }
+
+    const icon = result.success
+      ? 'success'
+      : result.partial
+        ? 'warning'
+        : 'error'
+    const title = result.success
+      ? 'Perfil actualizado'
+      : result.partial
+        ? 'Guardado parcial'
+        : 'No se pudo actualizar'
+
+    Swal.fire({
+      icon,
+      title,
+      text: result.success
+        ? 'Tus cambios se guardaron correctamente.'
+        : result.message,
+      confirmButtonColor: '#f2be22'
     })
   })
 }
 
-function populateProfileForm(session) {
-  const allUsers = JSON.parse(window.localStorage.getItem(USERS_COLLECTION)) || []
-  const fullUserData = allUsers.find(user => user.id === session.id) || session
-
-  document.getElementById('inputFirstName').value = fullUserData.nombre || ''
-  document.getElementById('inputLastName').value = fullUserData.apellido || ''
-  document.getElementById('inputDocumentId').value = fullUserData.documento || ''
-  document.getElementById('inputAddress').value = fullUserData.direccion || ''
-  document.getElementById('inputPhone').value = fullUserData.telefono || ''
-
-  document.getElementById('inputEmergencyName').value = fullUserData.contactoEmergenciaNombre || ''
-  document.getElementById('inputEmergencyRelation').value = fullUserData.contactoEmergenciaParentesco || ''
-  document.getElementById('inputEmergencyPhone').value = fullUserData.contactoEmergenciaTelefono || ''
-
-  document.getElementById('selectHealthProvider').value = fullUserData.eps || ''
-  document.getElementById('selectBloodType').value = fullUserData.rh || ''
-  document.getElementById('textareaMedicalConditions').value = fullUserData.condicionesMedicas || ''
-
-  const epsDateField = document.getElementById('inputEpsUpdateDate')
-  if (epsDateField) {
-    const rawDate = fullUserData.lastEpsUpdateDate || new Date().toISOString()
-    epsDateField.value = rawDate.split('T')[0]
-  }
-});
-
-function checkEpsCertificateExpiration(dateEpsStr) {
-  if (!dateEpsStr) return;
-
-  const [year, month, day] = dateEpsStr.split('-');
-  const lastUpdate = new Date(year, month - 1, day);
-  const currentDate = new Date();
-  const diffTime = Math.abs(currentDate - lastUpdate);
-  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-  if (diffDays >= 90) {
-    Swal.fire({
-      icon: 'warning',
-      title: '¡Certificado de EPS Vencido!',
-      html: 'Han pasado más de 3 meses desde tu última actualización de EPS.<br><br>Por favor <strong>actualiza la fecha y adjunta tu certificado de afiliación vigente</strong>.',
-      confirmButtonText: 'Actualizar Ahora',
-      confirmButtonColor: '#f2be22',
-      background: '#212529',
-      color: '#fff'
-    });
-  }
-}
-
-function handleAvatarPreview(event) {
-  const file = event.target.files[0]
-  if (file) {
-    const reader = new FileReader()
-    reader.onload = function (e) {
-      const avatarPreview = document.getElementById('avatarPreview')
-      if (avatarPreview) avatarPreview.src = e.target.result
-    }
-  } catch (error) {
-    console.error('Error de conexión con el backend:', error);
-  }
-}
-
-function saveProfileConfiguration(session) {
-  const allUsers = JSON.parse(window.localStorage.getItem(USERS_COLLECTION)) || []
-  const userIndex = allUsers.findIndex(user => user.id === session.id)
-
-  if (userIndex === -1) {
-    Swal.fire('Error', 'Usuario no encontrado en la base de datos.', 'error')
+const initProfile = async () => {
+  const session = getSession()
+  if (!session) {
+    window.location.href = '../auth/auth.html'
     return
   }
-}
 
-  const currentEps = document.getElementById('selectHealthProvider').value.trim()
-  const epsDateField = document.getElementById('inputEpsUpdateDate')
-  const avatarPreview = document.getElementById('avatarPreview')
+  setupHeaders(session)
 
-  const lastEpsUpdateDate = epsDateField && epsDateField.value
-    ? epsDateField.value
-    : new Date().toISOString().split('T')[0]
-
-  const updatedUser = {
-    ...allUsers[userIndex],
-    nombre: document.getElementById('inputFirstName').value.trim(),
-    apellido: document.getElementById('inputLastName').value.trim(),
-    documento: document.getElementById('inputDocumentId').value.trim(),
-    direccion: document.getElementById('inputAddress').value.trim(),
-    telefono: document.getElementById('inputPhone').value.trim(),
-
-    contactoEmergenciaNombre: document.getElementById('inputEmergencyName').value.trim(),
-    contactoEmergenciaParentesco: document.getElementById('inputEmergencyRelation').value.trim(),
-    contactoEmergenciaTelefono: document.getElementById('inputEmergencyPhone').value.trim(),
-
-    eps: currentEps,
-    rh: document.getElementById('selectBloodType').value,
-    condicionesMedicas: document.getElementById('textareaMedicalConditions').value.trim(),
-    fotoPerfil: avatarPreview ? avatarPreview.src : '',
-
-    lastEpsUpdateDate
-  }
-
-  allUsers[userIndex] = updatedUser
-  window.localStorage.setItem(USERS_COLLECTION, JSON.stringify(allUsers))
-
-  const { password, ...safeSession } = updatedUser
-  window.localStorage.setItem(CURRENT_SESSION, JSON.stringify(safeSession))
-
-      Swal.fire({
-        icon: 'success',
-        title: '¡Perfil Actualizado!',
-        text: 'Tus datos médicos y personales se han guardado en el servidor correctamente.',
-        confirmButtonColor: '#f2be22',
-        background: '#212529',
-        color: '#fff'
-      });
-    } else {
-      throw new Error("Fallo al guardar en alguna de las tablas del servidor.");
-    }
-  } catch (error) {
-    Swal.fire('Error', 'Hubo un problema al conectar con el servidor backend.', 'error');
-    console.error(error);
-  }
-}
-
-function setupAdminLogout() {
-  const adminLogoutBtn = document.getElementById('adminLogoutBtn')
-  if (adminLogoutBtn) {
-    adminLogoutBtn.addEventListener('click', () => {
-      window.localStorage.removeItem(CURRENT_SESSION)
-      window.location.href = '../auth/auth.html'
+  const [user, information] = await Promise.all([
+    usersService.getCurrentUserFromApi(),
+    usersService.getCurrentUserInformationFromApi()
+  ])
+  if (!user) {
+    Swal.fire({
+      icon: 'error',
+      title: 'No se encontró tu usuario',
+      text: 'No fue posible cargar la información desde el servidor.',
+      confirmButtonColor: '#f2be22'
     })
+    return
   }
+
+  populateProfileForm(user, information)
+  setupAvatarPreview()
+  setupCancelButton()
+  setupProfileForm(user, information)
 }
+
+document.addEventListener('DOMContentLoaded', initProfile)

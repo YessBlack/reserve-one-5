@@ -16,7 +16,7 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css"
     crossorigin="anonymous" />
 
-    
+
   <link rel="stylesheet" href="../../shared/css/reset.css">
   <link rel="stylesheet" href="../../shared/css/variables.css">
   <link rel="stylesheet" href="../../shared/components/Header/Header.css">
@@ -26,7 +26,7 @@
 
 <body class="dojo-theme-body bg-dark text-white">
 
-  <header class="header">
+  <header class="header sticky-top">
     <div class="container">
       <nav class="navbar navbar-expand-lg px-0">
 
@@ -83,74 +83,11 @@
     </header>
 
     <section class="monthly-memberships-container">
-      <div class="membership-grid">
-        <article class="membership-tier-card tier-kids">
-          <div class="tier-header">
-            <img src="/src/assets/LogoSinFondo.png" class="logo">
-            <h3 class="tier-name">Kids</h3>
-            <span class="tier-target">Edad 6 a 11 años</span>
-          </div>
-          <div class="tier-pricing">
-            <span class="currency">$</span><span class="price-amount">120.000</span>
-          </div>
-          <ul class="tier-benefits-list">
-            <li><i class="fa-solid fa-check"></i> Clases de Wushu Kids</li>
-            <li><i class="fa-regular fa-clock"></i> Miércoles 5:00 pm - 6:00 pm</li>
-            <li><i class="fa-regular fa-clock"></i> Sábados 8:30 am - 9:30 am</li>
-          </ul>
-          <button class="select-plan-trigger" data-plan="Kids" data-price="120000">Elegir Plan</button>
-        </article>
-
-        <article class="membership-tier-card tier-student">
-          <div class="tier-header">
-            <img src="/src/assets/LogoSinFondo.png" class="logo">
-            <h3 class="tier-name">Estudiantes</h3>
-            <span class="tier-target">Colegio, Tecnico, Universidad</span>
-          </div>
-          <div class="tier-pricing">
-            <span class="currency">$</span><span class="price-amount">120.000</span>
-          </div>
-          <ul class="tier-benefits-list">
-            <li><i class="fa-solid fa-check"></i> Acceso a todas las clases generales</li>
-            <li><i class="fa-solid fa-sun"></i> Mañanas y Tardes</li>
-            <li><i class="fa-solid fa-moon"></i> Noches y Sábados</li>
-          </ul>
-          <button class="select-plan-trigger" data-plan="Estudiantes" data-price="120000">Elegir Plan</button>
-        </article>
-
-        <article class="membership-tier-card tier-regular">
-          <div class="tier-header">
-            <img src="/src/assets/LogoSinFondo.png" class="logo">
-            <h3 class="tier-name">Tarifa Regular</h3>
-            <span class="tier-target">Público General</span>
-          </div>
-          <div class="tier-pricing">
-            <span class="currency">$</span><span class="price-amount">150.000</span>
-          </div>
-          <ul class="tier-benefits-list">
-            <li><i class="fa-solid fa-check"></i> Acceso a todas las clases generales</li>
-            <li><i class="fa-solid fa-sun"></i> Mañanas y Tardes</li>
-            <li><i class="fa-solid fa-moon"></i> Noches y Sábados</li>
-          </ul>
-          <button class="select-plan-trigger" data-plan="Regular" data-price="150000">Elegir Plan</button>
-        </article>
-
-        <article class="membership-tier-card tier-regular">
-          <div class="tier-header">
-            <img src="/src/assets/LogoSinFondo.png" class="logo">
-            <h3 class="tier-name">Full Pass</h3>
-            <span class="tier-target">Acceso Ilimitado</span>
-          </div>
-          <div class="tier-pricing">
-            <span class="currency">$</span><span class="price-amount">190.000</span>
-          </div>
-          <ul class="tier-benefits-list">
-            <li><i class="fa-solid fa-check-double"></i> Acceso libre a TODAS las clases</li>
-            <li><i class="fa-solid fa-users"></i> Clases Generales incluidas</li>
-            <li><i class="fa-solid fa-star"></i> Clases Especializadas incluidas</li>
-          </ul>
-          <button class="select-plan-trigger" data-plan="Regular" data-price="150000">Elegir Plan</button>
-        </article>
+      <div class="membership-grid" id="membershipGrid">
+        <div class="memberships-loading" role="status" aria-live="polite">
+          <div class="memberships-loading__spinner" aria-hidden="true"></div>
+          <span>Cargando mensualidades...</span>
+        </div>
       </div>
     </section>
 
@@ -166,6 +103,7 @@
             <li class="addon-description"> Taolu - Figuras</li>
             <li class="addon-description"> Sanda - Combate Deportivo</li>
             <div class="addon-price-tag">$15.000</div>
+            <span class="addon-coming-soon">Próximamente disponible</span>
           </div>
           <div>
             <img src="/src/assets/LogoSinFondo.png" class="logo">
@@ -180,6 +118,7 @@
             <li class="addon-description"> Taolu - Figuras</li>
             <li class="addon-description"> Sanda - Combate Deportivo</li>
             <div class="addon-price-tag">$32.500</div>
+            <span class="addon-coming-soon">Próximamente disponible</span>
           </div>
           <div>
             <img src="/src/assets/LogoSinFondo.png" class="logo">
@@ -208,7 +147,7 @@
     });
   </script>
 
-  <script src="pricing.js"></script>
+  <script type="module" src="./pricing.js"></script>
 
 </body>
 

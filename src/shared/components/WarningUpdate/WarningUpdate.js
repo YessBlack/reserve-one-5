@@ -1,36 +1,46 @@
+import { usersService } from '../../../services/userService.js'
+
 const SESSION_KEY = 'lanhua_session'
-const USERS_KEY = 'lanhua_users'
 const PROFILE_URL = '/src/features/users/users.html'
 
-const isProfileComplete = (user) => {
-  if (!user) return false
+const isProfileComplete = (user, information) => {
+  if (!user || !information) return false
 
-  const requiredFields = [
-    'nombre',
-    'apellidos',
-    'documento',
-    'direccion',
-    'telefono',
-    'contactoEmergenciaNombre',
-    'contactoEmergenciaParentesco',
-    'contactoEmergenciaTelefono',
+  const requiredInformationFields = [
+    'numberDni',
+    'address',
+    'userPhone',
+    'contactName',
+    'kinship',
+    'contactPhone',
     'eps',
     'rh'
   ]
 
-  return requiredFields.every(field => {
-    const value = user[field]
+  const hasBasicUserData = Boolean(
+    user.nameUser?.trim() && user.lastNameUser?.trim()
+  )
+
+  const hasExtendedData = requiredInformationFields.every((field) => {
+    const value = information[field]
     return value !== undefined && value !== null && String(value).trim() !== ''
   })
+
+  return hasBasicUserData && hasExtendedData
 }
 
-export const initWarningUpdate = () => {
+export const initWarningUpdate = async () => {
   const session = JSON.parse(window.localStorage.getItem(SESSION_KEY))
-  if (!session || session.role === 'ADMIN') return
-  const allUsers = JSON.parse(window.localStorage.getItem(USERS_KEY)) || []
-  const fullUser = allUsers.find(u => u.id === session.id) || session
-  if (isProfileComplete(fullUser)) return
+  if (!session || (session.role || '').toUpperCase() === 'ADMIN') return
+
+  const [user, information] = await Promise.all([
+    usersService.getCurrentUserFromApi(),
+    usersService.getCurrentUserInformationFromApi()
+  ])
+
+  if (isProfileComplete(user, information)) return
   if (document.getElementById('warningUpdateBanner')) return
+
   const bannerElement = document.createElement('div')
   bannerElement.id = 'warningUpdateBanner'
   bannerElement.className = 'warning-update-banner'
