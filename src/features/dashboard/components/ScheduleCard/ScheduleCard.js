@@ -13,8 +13,8 @@ export const ScheduleCard = (classItem) => {
   return `
     <article class="class-card border">
       <div class="position-relative">
-        <!-- Usamos classItem.catalog.image y el nombre del catálogo para el alt -->
-        <img src="${classItem.catalog?.image || classItem.image || ''}" alt="${className}" class="card-img-top">
+        <!-- La imagen personalizada del horario tiene prioridad sobre la del catálogo -->
+        <img src="${classItem.image || classItem.catalog?.image || ''}" alt="${className}" class="card-img-top">
         <span class="badge position-absolute bottom-0 start-0 m-2 class-badge">${capitalize(classItem.level || '')}</span>
       </div>
 

@@ -21,6 +21,15 @@ async function renderizarReservas() {
 
   if (!contenedor) return
 
+  contenedor.innerHTML = `
+    <div class="card p-5 text-center bg-dark text-muted border-secondary">
+      <div class="spinner-border text-warning mx-auto mb-2" role="status">
+        <span class="visually-hidden">Cargando...</span>
+      </div>
+      <p class="small mb-0">Cargando tus reservas...</p>
+    </div>
+  `
+
   const misReservas = await reservationsService.getPendingReservations()
 
   contenedor.innerHTML = ''

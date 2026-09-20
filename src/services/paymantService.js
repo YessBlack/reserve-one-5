@@ -1,6 +1,4 @@
-import { usersService } from "./userService.js";
-
-const API_URL = "http://localhost:8080/api";
+import api from "./axiosConfig.js";
 
 export const PAYMENT_STATUS = Object.freeze({
   PENDING: "PENDING",
@@ -21,32 +19,24 @@ export const FINAL_STATUSES = [
 
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_URL}${path}`, {
-    ...options,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${usersService.getToken()}`,
-      ...options.headers,
-    },
-  });
-
-  if (!res.ok) {
-    let details = null
-    try {
-      details = await res.json()
-    } catch {
-      details = await res.text().catch(() => null)
-    }
-
-    const message = typeof details === 'string'
+  try {
+    const response = await api.request({
+      url: path,
+      method: options.method || "GET",
+      data: options.body ? JSON.parse(options.body) : undefined,
+      headers: options.headers,
+    });
+    return response.data;
+  } catch (err) {
+    const details = err.response?.data ?? null;
+    const message = typeof details === "string"
       ? details
-      : details?.message || details?.error || `Error ${res.status} en ${path}`
-    const error = new Error(message)
-    error.status = res.status;
+      : details?.message || details?.error || err.message || `Error en ${path}`;
+    const error = new Error(message);
+    error.status = err.response?.status;
     error.details = details;
     throw error;
   }
-  return res.json();
 }
 
 function sleep(ms, signal) {

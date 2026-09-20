@@ -12,6 +12,8 @@ const bootstrapModal = bootstrap.Modal.getOrCreateInstance(modalElement)
 
 let form
 let catalogItems = []
+let isSubmitting = false
+let isDeleting = false
 
 // CRUD
 const getItemsCatalog = async () => {
@@ -140,7 +142,9 @@ const handleEdit = async (editId) => {
   return true
 }
 
-const handleDelete = async (id) => {
+const handleDelete = async (id, triggerButton) => {
+  if (isDeleting) return
+
   const result = await Swal.fire({
     title: '¿Estás seguro?',
     text: '¿Estás seguro de que deseas eliminar este programa?',
@@ -156,6 +160,9 @@ const handleDelete = async (id) => {
 
   if (!result.isConfirmed) return
 
+  isDeleting = true
+  if (triggerButton) triggerButton.disabled = true
+
   try {
     await catalogService.deleteItemCatalog(id)
     await renderItemsCatalog()
@@ -169,14 +176,23 @@ const handleDelete = async (id) => {
     })
   } catch (error) {
     showCatalogError(error)
+    if (triggerButton) triggerButton.disabled = false
+  } finally {
+    isDeleting = false
   }
 }
 
 const handleSubmit = async (e) => {
   e.preventDefault()
 
+  if (isSubmitting) return
+
   const editId = form.dataset.editId
+  const submitButton = document.querySelector('#addCatalogItem')
   let saved = false
+
+  isSubmitting = true
+  if (submitButton) submitButton.disabled = true
 
   try {
     if (editId) {
@@ -186,9 +202,14 @@ const handleSubmit = async (e) => {
     }
   } catch (error) {
     showCatalogError(error)
+  } finally {
+    isSubmitting = false
   }
 
-  if (!saved) return
+  if (!saved) {
+    if (submitButton) submitButton.disabled = !form.checkValidity()
+    return
+  }
 
   bootstrapModal.hide()
   await renderItemsCatalog()
@@ -203,7 +224,7 @@ const setupEventListeners = () => {
   catalogContainer.addEventListener('click', (event) => {
     const deleteBtn = event.target.closest('.delete-btn')
     if (deleteBtn) {
-      handleDelete(deleteBtn.dataset.id)
+      handleDelete(deleteBtn.dataset.id, deleteBtn)
       return
     }
 

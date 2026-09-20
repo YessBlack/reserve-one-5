@@ -33,6 +33,17 @@ const getUserEmail = (user) => user.emailUser ?? ''
 
 const getUserRole = (user) => user.nameRol ?? ''
 
+const renderLoadingUsers = () => {
+  tableBody.innerHTML = `
+    <tr>
+      <td colspan="5" class="text-center text-muted py-4">
+        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+        Cargando usuarios...
+      </td>
+    </tr>
+  `
+}
+
 const renderUsers = (list) => {
   tableBody.innerHTML = ''
 
@@ -180,6 +191,7 @@ const getApiErrorMessage = (error) => error.response?.data?.message
   || 'No fue posible completar la operación en el servidor.'
 
 const loadUsers = async () => {
+  renderLoadingUsers()
   const list = await usersService.getAllUsersFromApi()
   users = list.filter((user) => getUserRole(user).toUpperCase() === 'ADMIN')
   renderUsers(users)

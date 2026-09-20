@@ -126,6 +126,24 @@ function getUserFullName(user) {
   return fullName || user.email || user.emailUser || null
 }
 
+function getEventUserId(event) {
+  return event.idUser ?? event.userId ?? event.user?.idUser ?? event.user?.id
+    ?? event.professor?.idUser ?? event.professor?.id
+}
+
+function getEventProfessorName(event, allUsers) {
+  const existingName = event.userName
+    || getUserFullName(event.user)
+    || getUserFullName(event.professor)
+    || (typeof event.professor === 'string' ? event.professor : null)
+
+  if (existingName) return existingName
+
+  const userId = getEventUserId(event)
+  const user = allUsers.find(u => String(u.id ?? u.idUser) === String(userId))
+  return getUserFullName(user) || 'Profesor sin asignar'
+}
+
 function setupCalendarControls() {
   document.getElementById('prevMonth').addEventListener('click', () => {
     currentDate.setMonth(currentDate.getMonth() - 1)
@@ -206,8 +224,6 @@ async function renderAgenda(dateObj) {
     return event?.scheduleDate && event.scheduleDate.split('T')[0] === targetDateString
   })
 
-  agendaList.innerHTML = ''
-
   if (dailyEvents.length === 0) {
     agendaList.innerHTML = `
       <div class="text-center text-muted p-4 border rounded border-dashed agenda-empty">
@@ -231,9 +247,11 @@ async function renderAgenda(dateObj) {
     ? await reservationsService.getAllConfirmedReservations()
     : []
 
+  let agendaHTML = ''
+
   for (const event of dailyEvents) {
     const timeString = event.scheduleDate.split('T')[1]
-    const professorName = event.professor ? event.professor : 'Profesor sin asignar'
+    const professorName = isAdmin ? getEventProfessorName(event, allUsers) : null
 
     let adminDetails = ''
 
@@ -270,7 +288,7 @@ async function renderAgenda(dateObj) {
       `
     }
 
-    agendaList.innerHTML += `
+    agendaHTML += `
       <div class="card agenda-card p-3 shadow-sm">
         <div class="d-flex justify-content-between align-items-start mb-1">
           <h6 class="fw-bold m-0 ${cardTitleClass}">${capitalize(event.title)}</h6>
@@ -285,4 +303,6 @@ async function renderAgenda(dateObj) {
       </div>
     `
   }
+
+  agendaList.innerHTML = agendaHTML
 }
