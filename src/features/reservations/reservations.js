@@ -5,6 +5,12 @@ import { getImagePath } from '../../shared/js/config.js'
 import { formatScheduleDate } from '../../shared/js/dateUtils.js'
 import { capitalize } from '../../shared/js/utils.js'
 
+const resolveImageSource = (image) => {
+  if (!image) return getImagePath('lanhua-banner-1.png')
+  if (image.startsWith('data:') || image.startsWith('http') || image.startsWith('/')) return image
+  return getImagePath(image.split('/').pop())
+}
+
 async function renderizarReservas() {
   const contenedor = document.getElementById('lista-reservas')
   const totalElemento = document.getElementById('total-reservas')
@@ -41,7 +47,7 @@ async function renderizarReservas() {
     const claseInfo = item.schedule || {}
     const catalogoInfo = item.catalog || {}
     const titulo = catalogoInfo.name || 'Clase sin nombre'
-    const imagen = claseInfo.image || catalogoInfo.image || 'lanhua-banner-1.png'
+    const imagen = claseInfo.image || catalogoInfo.image
     const nivel = claseInfo.level || 'General'
 
     const fechaText =
@@ -56,7 +62,7 @@ async function renderizarReservas() {
         <div class="card p-3 bg-dark border-secondary mb-2">
             <div class="row align-items-center">
                 <div class="col-md-3 mb-2 mb-md-0">
-                    <img src="${getImagePath(imagen.split('/').pop())}" class="img-fluid rounded object-fit-cover" alt="${titulo}" style="height: 80px; width: 100%;">
+                    <img src="${resolveImageSource(imagen)}" class="img-fluid rounded object-fit-cover" alt="${titulo}" style="height: 80px; width: 100%;">
                 </div>
                 <div class="col-md-5">
                     <div class="d-flex align-items-center gap-2 mb-1">

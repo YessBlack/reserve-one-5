@@ -13,17 +13,57 @@ const parseJwt = (token) => {
 }
 
 const setSession = (userEmail, role, userId) => {
-  localStorage.setItem(SESSION_KEY, JSON.stringify({ id: userId, email: userEmail, role, isLoggedIn: true }))
+  localStorage.setItem(
+    SESSION_KEY,
+    JSON.stringify({
+      id: userId,
+      idUser: userId,
+      email: userEmail,
+      role,
+      isLoggedIn: true
+    })
+  )
+}
+
+const logout = () => {
+  localStorage.removeItem(SESSION_KEY)
+  localStorage.removeItem(TOKEN_KEY)
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  const hash = window.location.hash
+  const loginHeader = document.getElementById('loginHeader')
+  const registerHeader = document.getElementById('registerHeader')
+  const loginTab = document.getElementById('login-tab')
+  const registerTab = document.getElementById('register-tab')
 
+  const updateHeader = (target) => {
+    const isRegister = target === '#register' || target === 'register'
+    if (loginHeader && registerHeader) {
+      if (isRegister) {
+        loginHeader.classList.add('d-none')
+        registerHeader.classList.remove('d-none')
+      } else {
+        loginHeader.classList.remove('d-none')
+        registerHeader.classList.add('d-none')
+      }
+    }
+  }
+
+  if (loginTab) {
+    loginTab.addEventListener('shown.bs.tab', () => updateHeader('#login'))
+  }
+
+  if (registerTab) {
+    registerTab.addEventListener('shown.bs.tab', () => updateHeader('#register'))
+  }
+
+  const hash = window.location.hash
   if (hash) {
     const triggerEl = document.querySelector(`button[data-bs-target="${hash}"]`)
     if (triggerEl) {
       const tab = new bootstrap.Tab(triggerEl)
       tab.show()
+      updateHeader(hash)
     }
   }
 

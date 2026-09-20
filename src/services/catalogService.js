@@ -4,7 +4,6 @@ const mapCatalogItem = (item = {}) => ({
   id: item.idCatalog ?? item.id,
   title: item.name ?? item.title,
   description: item.description,
-  category: Array.isArray(item.category) ? item.category[0] : item.category,
   image: item.image
 })
 

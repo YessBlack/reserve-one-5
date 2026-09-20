@@ -24,16 +24,6 @@
   color: var(--primary-color);
 }
 
-.class-badge-Clase {
-  background-color: var(--accent-color);
-  font-size: 13px;
-}
-
-.class-badge-Membresía {
-  background-color: var(--primary-color);
-
-}
-
 .class-item {
   font-size: 14px;
   color: #563304;

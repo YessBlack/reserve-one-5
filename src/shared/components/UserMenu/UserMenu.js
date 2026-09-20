@@ -1,3 +1,5 @@
+import api from '../../../services/axiosConfig.js'
+
 const SESSION_KEY = 'lanhua_session'
 const DEFAULT_AVATAR = '/src/assets/default-avatar.png'
 const LOGIN_URL = '/src/features/auth/auth.html'
@@ -32,7 +34,6 @@ const menuItem = (href, iconPath, label, extraClass = '') => `
 const logoutItem = () => `
   <li><a class="user-menu-panel__item user-menu-panel__item--danger" href="#" id="logoutBtn">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
       <path d="M16 17l5-5-5-5M21 12H9"/>
     </svg>
     Cerrar sesión
@@ -73,6 +74,10 @@ const adminMenuItems = () => {
   `
 }
 
+const getDisplayName = (user) => [user?.nameUser, user?.lastNameUser]
+  .filter(Boolean)
+  .join(' ')
+
 const template = (session) => {
   if (!session) {
     return `
@@ -82,9 +87,10 @@ const template = (session) => {
     `
   }
 
-  const name = session.nombre && (session.apellido || session.apellidos)
-    ? `${session.nombre} ${session.apellido || session.apellidos}`
-    : session.nombre || session.name || session.email || 'Mi cuenta'
+  const name = getDisplayName(session)
+    || (session.nombre && (session.apellido || session.apellidos)
+      ? `${session.nombre} ${session.apellido || session.apellidos}`
+      : session.nombre || session.name || session.email || 'Mi cuenta')
   const avatar = session.fotoPerfil || DEFAULT_AVATAR
   const isAdmin = session.role === 'ADMIN'
 
@@ -108,6 +114,28 @@ const template = (session) => {
   `
 }
 
+const updateMenuNameFromApi = async (session, container) => {
+  const userId = session.idUser ?? session.id
+  if (!userId || getDisplayName(session)) return
+
+  try {
+    const response = await api.get(`/users/${userId}`)
+    const name = getDisplayName(response.data)
+    if (!name) return
+
+    session.nameUser = response.data.nameUser
+    session.lastNameUser = response.data.lastNameUser
+    window.localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+
+    const nameElement = container.querySelector('.user-chip__name')
+    const avatar = container.querySelector('.user-chip__avatar img')
+    if (nameElement) nameElement.textContent = name
+    if (avatar) avatar.alt = name
+  } catch (error) {
+    console.error('Error obteniendo el nombre del usuario:', error)
+  }
+}
+
 export const loadUserMenu = (containerId = 'authNavContainer') => {
   const container = document.getElementById(containerId)
 
@@ -117,6 +145,8 @@ export const loadUserMenu = (containerId = 'authNavContainer') => {
   container.innerHTML = template(session)
 
   if (!session) return
+
+  updateMenuNameFromApi(session, container)
 
   const logoutBtn = document.getElementById('logoutBtn')
 

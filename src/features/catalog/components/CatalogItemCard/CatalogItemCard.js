@@ -7,7 +7,6 @@ export const CatalogItemCard = (classItem) => {
         <div class="position-relative">
           <img src="${classItem.image}" class="card-img-top object-fit-cover bg-secondary bg-opacity-25"
             style="height: 180px;" alt="${classItem.title}">
-          <span class="badge position-absolute bottom-0 start-0 m-2 class-badge-${classItem.category}">${classItem.category}</span>
         </div>
         <div class="card-body d-flex flex-column justify-content-between">
           <div>

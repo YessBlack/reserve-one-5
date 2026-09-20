@@ -201,62 +201,237 @@
         </div>
       </div>
     </section>
-  </main>
-
-  <main>
+    <!-- SECCIÓN: NUESTROS PROGRAMAS -->
     <section class="programas-section py-5">
-      <div class="container">
+      <div class="container py-4">
 
-        <div class="row align-items-end mb-4">
+        <div class="row align-items-end mb-5 d-flex flex-column flex-md-row gap-5 gap-md-0">
           <div class="col-md-8">
-            <h2 class="programas-title mb-3">Nuestros Programas</h2>
+            <h2 class="programas-title mb-5">Nuestros Programas</h2>
             <p class="programas-sub mb-0">
-              Nuestra oferta académica está diseñada para llevarte desde los fundamentos básicos hasta la maestría
-              técnica.
+              Nuestra oferta académica te acompaña desde los fundamentos básicos hasta la maestría técnica, preparándote
+              para destacar tanto en la práctica tradicional como en competencias nacionales e internacionales.
             </p>
           </div>
           <div class="col-md-4 text-md-end mt-3 mt-md-0">
-            <a href="./features/catalog_users/catalog_user.html" class="link-ver-todos">Ver todos los
-              programas</a>
+            <a href="./features/catalog_users/catalog_user.html" class="btn btn-programas-outline">
+              Ver todos los programas <i class="fas fa-arrow-right ms-2"></i>
+            </a>
           </div>
         </div>
 
         <div class="row g-4">
 
+          <!-- 1. Kung Fu Tradicional -->
           <div class="col-12 col-md-4">
-            <div class="card programa-card border-0 overflow-hidden shadow-sm"
-              style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQu5zMb8eTyKQOvTy46fU_cthvkX_9nsXCmxvkmRLSlIg&s=10');">
-              <div class="card-overlay p-4 d-flex flex-column justify-content-end">
+            <div class="programa-card">
+              <div class="programa-img-wrapper">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQu5zMb8eTyKQOvTy46fU_cthvkX_9nsXCmxvkmRLSlIg&s=10"
+                  alt="Kung Fu Tradicional" class="programa-img">
+                <div class="programa-img-overlay"></div>
+              </div>
+              <div class="programa-body p-4 d-flex flex-column gap-5">
                 <div>
-                  <span class="badge badge-nivel badge-principiante mb-2">PRINCIPIANTE</span>
-                  <span class="badge badge-nivel badge-intermedio mb-2">INTERMEDIO</span>
-                  <h3 class="card-title text-white mb-1">Kung Fu Tradicional</h3>
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <span class="badge badge-nivel badge-principiante">PRINCIPIANTE &bull; INTERMEDIO</span>
+                    <span class="programa-icon"><i class="fas fa-dragon"></i></span>
+                  </div>
+                  <h3 class="card-title text-white mb-3">Kung Fu Tradicional</h3>
+                  <p class="card-desc mb-2">
+                    Aprende la esencia del linaje Mizong Luohan. Enfocado en defensa personal real, agilidad y
+                    desarrollo del carácter marcial.
+                  </p>
+                </div>
+                <div>
+                  <div class="programa-tags d-flex flex-wrap gap-2 mb-4">
+                    <span class="tag-pill"><i class="fas fa-shield-alt me-1"></i>Defensa</span>
+                    <span class="tag-pill"><i class="fas fa-scroll me-1"></i>Linaje</span>
+                  </div>
+                  <a href="./features/catalog_users/catalog_user.html" class="btn btn-programa-action w-100">
+                    Explorar Clases <i class="fas fa-chevron-right ms-1"></i>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- 2. Wushu Moderno -->
           <div class="col-12 col-md-4">
-            <div class="card programa-card border-0 overflow-hidden shadow-sm"
-              style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxcX0eY5Zf0_SS2NsNn_dQMN6PITjBM2GypyWHqTzWzw&s=10');">
-              <div class="card-overlay p-4 d-flex flex-column justify-content-end">
+            <div class="programa-card">
+              <div class="programa-img-wrapper">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTxcX0eY5Zf0_SS2NsNn_dQMN6PITjBM2GypyWHqTzWzw&s=10"
+                  alt="Wushu Moderno" class="programa-img">
+                <div class="programa-img-overlay"></div>
+              </div>
+              <div class="programa-body p-4 d-flex flex-column gap-5">
                 <div>
-                  <span class="badge badge-nivel badge-principiante mb-2">PRINCIPIANTE</span>
-                  <span class="badge badge-nivel badge-intermedio mb-2">INTERMEDIO</span>
-                  <h3 class="card-title text-white mb-1">Wushu Moderno</h3>
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <span class="badge badge-nivel badge-intermedio">ALTO RENDIMIENTO</span>
+                    <span class="programa-icon"><i class="fas fa-bolt"></i></span>
+                  </div>
+                  <h3 class="card-title text-white mb-3">Wushu Moderno</h3>
+                  <p class="card-desc mb-2">
+                    Rutinas de alto impacto acrobático (Taolu) y combate deportivo a contacto completo (Sanda) con
+                    estándares internacionales.
+                  </p>
+                </div>
+                <div>
+                  <div class="programa-tags d-flex flex-wrap gap-2 mb-4">
+                    <span class="tag-pill"><i class="fas fa-running me-1"></i>Taolu</span>
+                    <span class="tag-pill"><i class="fas fa-fist-raised me-1"></i>Sanda</span>
+                  </div>
+                  <a href="./features/catalog_users/catalog_user.html" class="btn btn-programa-action w-100">
+                    Explorar Clases <i class="fas fa-chevron-right ms-1"></i>
+                  </a>
                 </div>
               </div>
             </div>
           </div>
 
+          <!-- 3. Tai Chi -->
           <div class="col-12 col-md-4">
-            <div class="card programa-card border-0 overflow-hidden shadow-sm"
-              style="background-image: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_m20PCJZXcI93idDAuQC3Q36B2XH0JurhNxO5FFReQA&s=10');">
-              <div class="card-overlay p-4 d-flex flex-column justify-content-end">
+            <div class="programa-card">
+              <div class="programa-img-wrapper">
+                <img
+                  src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR_m20PCJZXcI93idDAuQC3Q36B2XH0JurhNxO5FFReQA&s=10"
+                  alt="Tai Chi" class="programa-img">
+                <div class="programa-img-overlay"></div>
+              </div>
+              <div class="programa-body p-4 d-flex flex-column gap-5">
                 <div>
-                  <span class="badge badge-nivel badge-principiante mb-2">PRINCIPIANTE</span>
-                  <span class="badge badge-nivel badge-intermedio mb-2">INTERMEDIO</span>
-                  <h3 class="card-title text-white mb-1">Tai Chi</h3>
+                  <div class="d-flex align-items-center justify-content-between mb-4">
+                    <span class="badge badge-nivel badge-salud">TODOS LOS NIVELES</span>
+                    <span class="programa-icon"><i class="fas fa-yin-yang"></i></span>
+                  </div>
+                  <h3 class="card-title text-white mb-3">Tai Chi</h3>
+                  <p class="card-desc mb-2">
+                    Meditación en movimiento para promover la salud articular, la concentración mental y la fluidez del
+                    Qi (energía vital).
+                  </p>
+                </div>
+                <div>
+                  <div class="programa-tags d-flex flex-wrap gap-2 mb-4">
+                    <span class="tag-pill"><i class="fas fa-spa me-1"></i>Meditación</span>
+                    <span class="tag-pill"><i class="fas fa-heartbeat me-1"></i>Salud</span>
+                  </div>
+                  <a href="./features/catalog_users/catalog_user.html" class="btn btn-programa-action w-100">
+                    Explorar Clases <i class="fas fa-chevron-right ms-1"></i>
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECCIÓN: TESTIMONIOS DE ESTUDIANTES -->
+    <section class="testimonials-section py-5">
+      <div class="container py-4">
+
+        <div class="text-center mb-5">
+          <span class="testimonials-badge mb-2"><i class="fas fa-star me-1" style="color: var(--secondary-color);"></i>
+            Experiencias Reales</span>
+          <h2 class="testimonials-title mb-2">Comentarios de Estudiantes</h2>
+          <p class="testimonials-sub mx-auto mb-0">
+            Descubre lo que opina nuestra comunidad sobre su proceso de formación y crecimiento en Lan Hua.
+          </p>
+        </div>
+
+        <div class="row g-4 justify-content-center">
+
+          <!-- TESTIMONIAL 1 -->
+          <div class="col-12 col-md-4">
+            <div class="testimonial-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="testimonial-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <span class="testimonial-quote-icon"><i class="fas fa-quote-right"></i></span>
+                </div>
+                <p class="testimonial-text mb-4">
+                  "El nivel técnico de los profesores es impresionante. La disciplina y la exigencia en Wushu Moderno me
+                  han ayudado a superar mis límites físicos y mentales."
+                </p>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="testimonial-avatar">
+                  <span>CT</span>
+                </div>
+                <div>
+                  <h3 class="h6 testimonial-author mb-0">Camilo Torres</h3>
+                  <span class="testimonial-role">Estudiante de Wushu Moderno</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TESTIMONIAL 2 -->
+          <div class="col-12 col-md-4">
+            <div class="testimonial-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="testimonial-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <span class="testimonial-quote-icon"><i class="fas fa-quote-right"></i></span>
+                </div>
+                <p class="testimonial-text mb-4">
+                  "Practicar Tai Chi en Lan Hua cambió mi vida diaria. Logré reducir el estrés del trabajo y mejorar
+                  notablemente mi postura y flexibilidad."
+                </p>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="testimonial-avatar alt-avatar">
+                  <span>MR</span>
+                </div>
+                <div>
+                  <h3 class="h6 testimonial-author mb-0">Mariana Ríos</h3>
+                  <span class="testimonial-role">Estudiante de Tai Chi</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- TESTIMONIAL 3 -->
+          <div class="col-12 col-md-4">
+            <div class="testimonial-card p-4 h-100 d-flex flex-column justify-content-between">
+              <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                  <div class="testimonial-stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                  </div>
+                  <span class="testimonial-quote-icon"><i class="fas fa-quote-right"></i></span>
+                </div>
+                <p class="testimonial-text mb-4">
+                  "El ambiente de respeto y camaradería en Kung Fu Tradicional es único. Se siente el respaldo del
+                  linaje Mizong Luohan en cada entrenamiento."
+                </p>
+              </div>
+              <div class="d-flex align-items-center gap-3">
+                <div class="testimonial-avatar">
+                  <span>DG</span>
+                </div>
+                <div>
+                  <h3 class="h6 testimonial-author mb-0">David Gómez</h3>
+                  <span class="testimonial-role">Estudiante de Kung Fu Tradicional</span>
                 </div>
               </div>
             </div>

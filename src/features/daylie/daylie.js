@@ -22,6 +22,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   isAdmin = session.role === 'ADMIN'
   setupTheme()
   setupHeaders()
+  renderCalendarLoading()
   await loadData()
   setupCalendarControls()
   renderCalendar()
@@ -51,6 +52,26 @@ function setupHeaders() {
     title.textContent = 'Mi Agenda de Entrenamiento'
     description.textContent = 'Consulta las clases que has reservado en el Club LanHua.'
   }
+}
+
+function renderCalendarLoading() {
+  const loadingMarkup = `
+    <div class="daylie-loading" role="status" aria-live="polite">
+      <div class="daylie-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando calendario...</span>
+    </div>
+  `
+  document.getElementById('calendarGrid').innerHTML = loadingMarkup
+  document.getElementById('agendaList').innerHTML = loadingMarkup
+}
+
+function renderAgendaLoading() {
+  document.getElementById('agendaList').innerHTML = `
+    <div class="daylie-loading" role="status" aria-live="polite">
+      <div class="daylie-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando clases...</span>
+    </div>
+  `
 }
 
 async function loadData() {
@@ -175,6 +196,8 @@ async function renderAgenda(dateObj) {
   const agendaList = document.getElementById('agendaList')
   const selectedDateText = document.getElementById('selectedDateText')
   const targetDateString = formatDateString(dateObj)
+
+  renderAgendaLoading()
 
   const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }
   selectedDateText.textContent = capitalize(dateObj.toLocaleDateString('es-ES', options))

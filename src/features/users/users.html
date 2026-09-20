@@ -241,7 +241,7 @@
       const adminHeader = document.getElementById('adminHeader');
 
       if (session) {
-        if (session.role === 'admin') {
+        if ((session.role || '').toUpperCase() === 'ADMIN') {
           adminHeader.classList.remove('d-none');
           loadUserMenu('authNavContainerAdmin');
         } else {
@@ -255,7 +255,7 @@
     });
   </script>
 
-  <script src="users.js"></script>
+  <script src="users.js" type="module"></script>
 
 </body>
 

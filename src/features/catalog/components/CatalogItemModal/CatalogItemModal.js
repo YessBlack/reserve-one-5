@@ -1,7 +1,5 @@
 export const CatalogItemModal = (item = null) => {
   const isEditMode = Boolean(item)
-  const categories = Array.isArray(item?.category) ? item.category : [item?.category]
-  const hasCategory = (category) => categories.includes(category)
 
   return `
     <div class="modal-dialog">
@@ -20,14 +18,6 @@ export const CatalogItemModal = (item = null) => {
             <div class="mb-3">
               <label for="description" class="form-label fw-semibold small">Descripción</label>
               <textarea class="form-control" id="description" name="description" rows="3" placeholder="Breve detalle del programa..." required>${item?.description ?? ''}</textarea>
-            </div>
-            <div class="mb-3">
-              <label for="category" class="form-label fw-semibold small">Categoría</label>
-              <select class="form-select" id="category" name="category" required>
-                <option value="" ${!item?.category ? 'selected' : ''} disabled>Selecciona una categoría</option>
-                <option value="Membresía" ${hasCategory('Membresía') ? 'selected' : ''}>Membresía</option>
-                <option value="Clase" ${hasCategory('Clase') ? 'selected' : ''}>Clase</option>
-              </select>
             </div>
             <div class="mb-3">
               <label for="image" class="form-label fw-semibold small">Imagen</label>

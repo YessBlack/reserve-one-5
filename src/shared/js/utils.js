@@ -30,3 +30,8 @@ export const formatPrice = (price) => {
     maximumFractionDigits: 0
   }).format(price)
 }
+
+export const cleanPayload = (value) => {
+  const text = String(value ?? '').trim()
+  return text === '' ? null : text
+}

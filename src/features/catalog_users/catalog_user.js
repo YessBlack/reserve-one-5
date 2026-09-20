@@ -2,6 +2,7 @@
 /* eslint-disable space-before-function-paren */
 import { schedulesService } from '../../services/schedulesService.js'
 import { reservationsService } from '../../services/reservationsService.js'
+import { usersService } from '../../services/userService.js'
 import { Alert } from '../../shared/components/Alert/Alert.js'
 import { capitalize } from '../../shared/js/utils.js'
 import { ScheduleCardUser } from './components/ScheduleCardUser.js'
@@ -20,6 +21,38 @@ const getSession = () => {
 }
 
 const isAuthenticated = () => Boolean(getSession())
+
+const showMembershipRequiredAlert = () => {
+  Swal.fire({
+    icon: 'info',
+    title: 'Membresía requerida',
+    text: 'Primero adquiere una membresía activa para poder reservar clases.',
+    showCancelButton: true,
+    confirmButtonText: 'Ver membresías',
+    cancelButtonText: 'Continuar viendo clases',
+    confirmButtonColor: '#F2BE22',
+    cancelButtonColor: '#6c757d'
+  }).then((result) => {
+    if (result.isConfirmed) window.location.href = '../pricing/pricing.html'
+  })
+}
+
+const hasActiveMembership = async () => {
+  const user = await usersService.getCurrentUserFromApi()
+  return Boolean(user?.hasActiveMembership)
+}
+
+const renderClassesLoading = () => {
+  const cardsContainer = document.querySelector('#disciplinesContainer')
+  if (!cardsContainer) return
+
+  cardsContainer.innerHTML = `
+    <div class="classes-loading" role="status" aria-live="polite">
+      <div class="classes-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando clases...</span>
+    </div>
+  `
+}
 
 const renderFilter = () => {
   const container = document.querySelector('#mainContainer')
@@ -55,6 +88,7 @@ const renderClasses = async () => {
 
   if (!cardsContainer) return
 
+  renderClassesLoading()
   const classes = await schedulesService.getClasses()
   availableClasses = classes
 
@@ -113,6 +147,18 @@ const setupEventListeners = () => {
       })
 
       if (!selectedClass) return
+
+      let activeMembership = false
+      try {
+        activeMembership = await hasActiveMembership()
+      } catch (error) {
+        console.error('Error verificando la membresía activa:', error)
+      }
+
+      if (!activeMembership) {
+        showMembershipRequiredAlert()
+        return
+      }
 
       Swal.fire({
         title: '<strong>Agregar Reserva</strong>',
@@ -176,6 +222,7 @@ const setupEventListeners = () => {
 document.addEventListener('DOMContentLoaded', async () => {
   initAuthNav()
   renderFilter()
+  renderClassesLoading()
   await initFilter(renderFilteredClasses, renderClasses)
   await renderClasses()
   setupEventListeners()

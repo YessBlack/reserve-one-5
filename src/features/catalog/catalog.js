@@ -34,6 +34,13 @@ const showCatalogError = (error) => {
 
 // renders
 const renderItemsCatalog = async () => {
+  catalogContainer.innerHTML = `
+    <div class="catalog-loading" role="status" aria-live="polite">
+      <div class="catalog-loading__spinner" aria-hidden="true"></div>
+      <span>Cargando programas...</span>
+    </div>
+  `
+
   const programs = await getItemsCatalog()
 
   catalogContainer.innerHTML = ''
@@ -82,8 +89,6 @@ const validateForm = () => {
   form.addEventListener('change', updateButtonState)
 }
 
-const getSelectedCategories = () => [form.category.value]
-
 // handles
 const handleCreate = async () => {
   const imageFile = form.image.files[0]
@@ -92,7 +97,6 @@ const handleCreate = async () => {
   const payload = {
     name: form.title.value.toLowerCase(),
     description: form.description.value,
-    category: getSelectedCategories(),
     image: imageBase64
   }
 
@@ -116,7 +120,6 @@ const handleEdit = async (editId) => {
   const updatedItem = {
     name: form.title.value.toLowerCase(),
     description: form.description.value,
-    category: getSelectedCategories(),
     image: currentItem?.image
   }
 
